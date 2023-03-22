@@ -94,6 +94,8 @@ def train(config, workdir):
   writer = SummaryWriter(tb_dir)
 
   # Build dataloaders
+  # TODO: in EV/storm case need a  way to load data from numpy files rather than netcdf
+  # then transform inputs and outputs with log(1+x)
   train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="train", evaluation=False)
   eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", evaluation=False)
 

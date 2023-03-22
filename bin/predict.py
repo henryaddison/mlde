@@ -225,6 +225,7 @@ def main(
 
     for sample_id in range(num_samples):
         typer.echo(f"Sample run {sample_id}...")
+        # TODO: EV/storm case add a way to just output numpy files for predictions without tying to netcdf and time and lat and long
         cf_data_vars = {
             key: xr_data_eval.data_vars[key]
             for key in [
