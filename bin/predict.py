@@ -186,6 +186,8 @@ def main(
     batch_size: int = None,
     num_samples: int = 3,
     input_transform_key: str = None,
+    predictor: str = None,
+    corrector: str = None,
 ):
     config_path = os.path.join(workdir, "config.yml")
     config = load_config(config_path)
@@ -194,6 +196,16 @@ def main(
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
 
+    if predictor is not None:
+        config.sampling.predictor = predictor
+    if corrector is not None:
+        config.sampling.corrector = corrector
+
+    import hashlib
+
+    h = hashlib.new("sha256")
+    h.update(config.to_yaml().encode())
+
     output_dirpath = (
         workdir
         / "samples"
@@ -201,6 +213,7 @@ def main(
         / dataset
         / config.data.input_transform_key
         / split
+        / h.hexdigest()
     )
     os.makedirs(output_dirpath, exist_ok=True)
 
