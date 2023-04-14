@@ -150,11 +150,10 @@ def train(config, workdir):
   if config.training.random_crop_size > 0:
     random_crop = torchvision.transforms.RandomCrop(config.training.random_crop_size)
 
-  step = state["step"]
   for epoch in range(initial_epoch, num_train_epochs + 1):
-    state['epoch'] = epoch
+    state["epoch"] = epoch
     with logging_redirect_tqdm():
-      with tqdm(total=len(train_dl.dataset), desc=f'Epoch {epoch}', unit=' timesteps') as pbar:
+      with tqdm(total=len(train_dl.dataset), desc=f'Epoch {state["epoch"]}', unit=' timesteps') as pbar:
         for cond_batch, x_batch in train_dl:
 
           x_batch = x_batch.to(config.device)
@@ -173,33 +172,33 @@ def train(config, workdir):
           # batch = batch.permute(0, 3, 1, 2)
           # Execute one training step
           loss = train_step_fn(state, x_batch, cond_batch)
-          if step % config.training.log_freq == 0:
-            logging.info("epoch: %d, step: %d, training_loss: %.5e" % (epoch, step, loss.item()))
-            writer.add_scalar("training_loss", loss.cpu().detach(), global_step=step)
+          if state["step"] % config.training.log_freq == 0:
+            logging.info("epoch: %d, step: %d, training_loss: %.5e" % (state["epoch"], state["step"], loss.item()))
+            writer.add_scalar("training_loss", loss.cpu().detach(), global_step=state["step"])
 
           # Report the loss on an evaluation dataset periodically
-          if step % config.training.eval_freq == 0:
+          if state["step"] % config.training.eval_freq == 0:
             val_set_loss = val_loss(config, eval_dl, eval_step_fn, state)
-            logging.info("epoch: %d, step: %d, eval_loss: %.5e" % (epoch, step, val_set_loss))
-            writer.add_scalar("eval_loss", val_set_loss, global_step=step)
+            logging.info("epoch: %d, step: %d, eval_loss: %.5e" % (state["epoch"], state["step"], val_set_loss))
+            writer.add_scalar("eval_loss", val_set_loss, global_step=state["step"])
 
           # Log progress so far on epoch
           pbar.update(cond_batch.shape[0])
 
-          step += 1
+          state["step"] += 1
 
     # Save a temporary checkpoint to resume training after each epoch
     save_checkpoint(checkpoint_meta_dir, state)
     # Report the loss on an evaluation dataset each epoch
     val_set_loss = val_loss(config, eval_dl, eval_step_fn, state)
-    logging.info("epoch: %d, eval_loss: %.5e" % (epoch, val_set_loss))
-    writer.add_scalar("epoch_eval_loss", val_set_loss, global_step=epoch)
+    logging.info("epoch: %d, eval_loss: %.5e" % (state["epoch"], val_set_loss))
+    writer.add_scalar("epoch_eval_loss", val_set_loss, global_step=state["epoch"])
 
-    if (epoch != 0 and epoch % config.training.snapshot_freq == 0) or epoch == num_train_epochs:
+    if (state["epoch"] != 0 and state["epoch"] % config.training.snapshot_freq == 0) or state["epoch"] == num_train_epochs:
       # Save the checkpoint.
-      checkpoint_path = os.path.join(checkpoint_dir, f'epoch_{epoch}.pth')
+      checkpoint_path = os.path.join(checkpoint_dir, f'epoch_{state["epoch"]}.pth')
       save_checkpoint(checkpoint_path, state)
-      logging.info(f"epoch: {epoch}, checkpoint saved to {checkpoint_path}")
+      logging.info(f"epoch: {state['epoch']}, checkpoint saved to {checkpoint_path}")
 
   writer.flush()
   writer.close()
