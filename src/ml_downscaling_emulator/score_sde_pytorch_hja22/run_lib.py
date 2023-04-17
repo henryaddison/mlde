@@ -185,8 +185,6 @@ def train(config, workdir):
           # Log progress so far on epoch
           pbar.update(cond_batch.shape[0])
 
-          state["step"] += 1
-
     # Save a temporary checkpoint to resume training after each epoch
     save_checkpoint(checkpoint_meta_dir, state)
     # Report the loss on an evaluation dataset each epoch
