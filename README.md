@@ -10,7 +10,7 @@ by [Yang Song](https://yang-song.github.io), [Jascha Sohl-Dickstein](http://www.
 2. Clone and install https://github.com/henryaddison/mlde_utils into the environment: e.g. `pip install -e ../mlde_utils`
 3. Install ml_downscaling_emulator locally: `pip install -e .`
 4. Install unet code: `git clone --depth 1 git@github.com:henryaddison/Pytorch-UNet src/ml_downscaling_emulator/unet`
-5. Configure necessary environment variables: `DERVIED_DATA` and ...
+5. Configure necessary environment variables: `DERVIED_DATA` and `KK_SLACK_WH_URL`
 
 ### Usage
 
