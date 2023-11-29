@@ -1,6 +1,11 @@
+from importlib.resources import files
 from typing import Callable
 import numpy as np
 import xarray as xr
+
+from mlde_utils.data.remapcon import Remapcon
+from mlde_utils.data.shift_lon_break import ShiftLonBreak
+from mlde_utils.data.select_gcm_domain import SelectGCMDomain
 
 
 def _get_cdf(x, xbins):
@@ -68,3 +73,14 @@ def xrqm(
         .transpose("ensemble_member", "time", "grid_latitude", "grid_longitude")
         .assign_coords(time=ml_eval_da["time"])
     )
+
+
+def to_gcm_domain(ds: xr.Dataset):
+    target_grid_filepath = files("mlde_utils.data").joinpath(
+        "target_grids/60km/global/pr/moose_grid.nc"
+    )
+    xr.open_dataset(target_grid_filepath)
+    ds = Remapcon(target_grid_filepath).run(ds)
+    ds = ShiftLonBreak().run(ds)
+    ds = SelectGCMDomain(subdomain="2.2km-coarsened-4x_bham-64").run(ds)
+    return ds
