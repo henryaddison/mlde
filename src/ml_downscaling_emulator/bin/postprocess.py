@@ -179,7 +179,7 @@ def gcmify(
     ensemble_member: str = typer.Option(...),
 ):
     def process_samples(ds):
-        return ds.groupby("sample_id").map(to_gcm_domain)
+        return ds.groupby("ensemble_member").map(to_gcm_domain)
 
     process_each_sample(
         workdir,
