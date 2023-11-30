@@ -82,5 +82,5 @@ def to_gcm_domain(ds: xr.Dataset):
     xr.open_dataset(target_grid_filepath)
     ds = Remapcon(target_grid_filepath).run(ds)
     ds = ShiftLonBreak().run(ds)
-    ds = SelectGCMDomain(subdomain="2.2km-coarsened-4x_bham-64").run(ds)
+    ds = SelectGCMDomain(subdomain="birmingham", size=9).run(ds)
     return ds
