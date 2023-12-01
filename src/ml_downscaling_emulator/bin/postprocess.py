@@ -179,7 +179,7 @@ def gcmify(
     ensemble_member: str = typer.Option(...),
 ):
     def process_samples(ds):
-        ds = to_gcm_domain(ds.sel(ensemble_member=ensemble_member).map(to_gcm_domain))
+        ds = to_gcm_domain(ds.sel(ensemble_member=ensemble_member))
         ds["pred_pr"] = ds["pred_pr"].expand_dims({"ensemble_member": ensemble_member})
         return ds
 
