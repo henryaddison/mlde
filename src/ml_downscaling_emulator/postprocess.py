@@ -83,4 +83,5 @@ def to_gcm_domain(ds: xr.Dataset):
     ds = Remapcon(target_grid_filepath).run(ds)
     ds = ShiftLonBreak().run(ds)
     ds = SelectGCMDomain(subdomain="birmingham", size=9).run(ds)
+    ds = ds.drop_vars(["rotated_latitude_longitude"], errors="ignore")
     return ds
