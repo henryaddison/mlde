@@ -24,7 +24,10 @@ PRED_PR_ATTRS = {
 def fix(pred_ds):
     pred_ds[PRED_VAR] = pred_ds[PRED_VAR].assign_attrs(PRED_PR_ATTRS)
     for var in META_VARS:
-        pred_ds[var] = pred_ds[var].isel(ensemble_member=0, time=0)
+        if "ensemble_member" in pred_ds[var].dims:
+            pred_ds[var] = pred_ds[var].isel(ensemble_member=0)
+        if "time" in pred_ds[var].dims:
+            pred_ds[var] = pred_ds[var].isel(time=0)
 
     return pred_ds
 
