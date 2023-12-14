@@ -67,20 +67,20 @@ with logging_redirect_tqdm():
                     print(e)
             pbar.update(1)
 
-# with logging_redirect_tqdm():
-#     with tqdm(
-#         total=len(fpaths),
-#         desc=f"Fixing prediction files",
-#         unit=" files",
-#     ) as pbar:
-#         for fpath in fpaths:
-#             pred_ds = xr.open_dataset(fpath)
-#             # import pdb; pdb.set_trace()
-#             pred_ds = fix(pred_ds)
-#             errors = check(pred_ds)
+with logging_redirect_tqdm():
+    with tqdm(
+        total=len(fpaths),
+        desc=f"Fixing prediction files",
+        unit=" files",
+    ) as pbar:
+        for fpath in fpaths:
+            pred_ds = xr.open_dataset(fpath)
+            # import pdb; pdb.set_trace()
+            pred_ds = fix(pred_ds)
+            errors = check(pred_ds)
 
-#             if len(errors) > 0:
-#                 print(f"Errors in {fpath}:")
-#                 for e in errors:
-#                     print(e)
-#             pbar.update(1)
+            if len(errors) > 0:
+                print(f"Errors in {fpath}:")
+                for e in errors:
+                    print(e)
+            pbar.update(1)
