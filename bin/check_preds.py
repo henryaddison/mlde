@@ -86,6 +86,6 @@ with logging_redirect_tqdm():
                 print(f"Errors in {fpath}:")
                 for e in errors:
                     print(e)
-            else:
-                pred_ds.to_netcdf(fpath)
+            # else:
+            # pred_ds.to_netcdf(fpath)
             pbar.update(1)
