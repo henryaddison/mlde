@@ -165,6 +165,7 @@ def np_samples_to_xr(np_samples, target_transform, coords, cf_data_vars):
         xr.Dataset(data_vars=data_vars, coords=coords, attrs={})
     )
     samples_ds = samples_ds.rename({"target_pr": "pred_pr"})
+    samples_ds["pred_pr"] = samples_ds["pred_pr"].assign_attrs(pred_pr_attrs)
     return samples_ds
 
 
