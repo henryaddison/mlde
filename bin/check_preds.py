@@ -74,7 +74,7 @@ with logging_redirect_tqdm():
         unit=" files",
     ) as pbar:
         for fpath in fpaths:
-            pred_ds = xr.open_dataset(fpath)
+            pred_ds = xr.load_dataset(fpath)
             # import pdb; pdb.set_trace()
             pred_ds = fix(pred_ds)
             errors = check(pred_ds)
@@ -83,4 +83,6 @@ with logging_redirect_tqdm():
                 print(f"Errors in {fpath}:")
                 for e in errors:
                     print(e)
+            else:
+                pred_ds.to_netcdf(fpath)
             pbar.update(1)
