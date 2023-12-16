@@ -63,28 +63,18 @@ with logging_redirect_tqdm():
             with xr.open_dataset(fpath) as pred_ds:
                 errors = check(pred_ds)
 
-                if len(errors) != 5:
+                if len(errors) > 0:
                     print(f"Errors in {fpath}:")
                     for e in errors:
                         print(e)
-            pbar.update(1)
 
-with logging_redirect_tqdm():
-    with tqdm(
-        total=len(fpaths),
-        desc=f"Fixing prediction files",
-        unit=" files",
-    ) as pbar:
-        for fpath in fpaths:
-            pred_ds = xr.load_dataset(fpath)
+                    # pred_ds = fix(pred_ds)
+                    # errors = check(pred_ds)
 
-            pred_ds = fix(pred_ds)
-            errors = check(pred_ds)
-
-            if len(errors) > 0:
-                print(f"Errors in {fpath}:")
-                for e in errors:
-                    print(e)
-            else:
-                pred_ds.to_netcdf(fpath)
+                    # if len(errors) > 0:
+                    #     print(f"Errors in {fpath}:")
+                    #     for e in errors:
+                    #         print(e)
+                    # else:
+                    #     pred_ds.to_netcdf(fpath)
             pbar.update(1)
