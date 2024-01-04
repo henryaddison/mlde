@@ -53,14 +53,14 @@ EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
 
 def val_loss(config, eval_ds, eval_step_fn, state):
   val_set_loss = 0.0
-  for eval_cond_batch, eval_x_batch, eval_time_batch in eval_ds:
-    # eval_cond_batch, eval_x_batch = next(iter(eval_ds))
-    eval_x_batch = eval_x_batch.to(config.device)
+  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_ds:
+    # eval_cond_batch, eval_target_batch = next(iter(eval_ds))
+    eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
-    eval_loss = eval_step_fn(state, eval_x_batch, eval_cond_batch)
+    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch)
 
     # Progress
     val_set_loss += eval_loss.item()
@@ -171,21 +171,21 @@ def train(config, workdir):
       train_set_loss = 0.0
       with logging_redirect_tqdm():
         with tqdm(total=len(train_dl.dataset), desc=f"Epoch {state['epoch']}", unit=' timesteps') as pbar:
-          for cond_batch, x_batch, time_batch in train_dl:
+          for cond_batch, target_batch, time_batch in train_dl:
 
-            x_batch = x_batch.to(config.device)
+            target_batch = target_batch.to(config.device)
             cond_batch = cond_batch.to(config.device)
             # append any location-specific parameters
             cond_batch = state['location_params'](cond_batch)
 
             if config.training.random_crop_size > 0:
-              x_ch = x_batch.shape[1]
-              cropped = random_crop(torch.cat([x_batch, cond_batch], dim=1))
-              x_batch = cropped[:,:x_ch]
+              x_ch = target_batch.shape[1]
+              cropped = random_crop(torch.cat([target_batch, cond_batch], dim=1))
+              target_batch = cropped[:,:x_ch]
               cond_batch = cropped[:,x_ch:]
 
             # Execute one training step
-            loss = train_step_fn(state, x_batch, cond_batch)
+            loss = train_step_fn(state, target_batch, cond_batch)
             train_set_loss += loss.item()
             if state['step'] % config.training.log_freq == 0:
               logging.info("epoch: %d, step: %d, train_loss: %.5e" % (state['epoch'], state['step'], loss.item()))
