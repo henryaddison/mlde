@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-config_name="xarray_cunet_continuous"
+config_name="ukcp18_cunet_continuous"
 dataset="bham_gcmx-4x_12em_psl-temp4th-vort4th_eqvt_random-season"
 
 sde="subvpsde"
