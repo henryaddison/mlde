@@ -44,7 +44,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from torch.utils.tensorboard import SummaryWriter
 from .utils import save_checkpoint, restore_checkpoint
 
-from ml_downscaling_emulator.torch import get_dataloader
+from ml_downscaling_emulator.data import get_dataloader
 from mlde_utils import DatasetMetadata
 from ml_downscaling_emulator.training import log_epoch, track_run
 

@@ -15,7 +15,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import xarray as xr
 import yaml
 
-from ml_downscaling_emulator.torch import get_dataloader
+from ml_downscaling_emulator.data import get_dataloader
 from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
 from mlde_utils.training.dataset import get_variables
 
