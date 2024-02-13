@@ -1,13 +1,33 @@
+# coding=utf-8
+# Copyright 2020 The Google Research Authors.
+# Modifications copyright 2024 Henry Addison
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Lint as: python3
+"""Defaults for training in a deterministic fashion."""
+
 import ml_collections
 import torch
 
-
 def get_default_configs():
   config = ml_collections.ConfigDict()
+
+  config.deterministic = True
+
   # training
   config.training = training = ml_collections.ConfigDict()
-  config.training.batch_size = 16#128
-  training.n_epochs = 100
+  training.batch_size = 16#128
   training.snapshot_freq = 25
   training.log_freq = 50
   training.eval_freq = 1000
@@ -19,48 +39,36 @@ def get_default_configs():
   training.continuous = True
   training.reduce_mean = False
   training.random_crop_size = 0
+  training.continuous = True
+  training.reduce_mean = True
+  training.n_epochs = 20
+  training.snapshot_freq = 5
+  training.eval_freq = 5000
+  training.sde = ""
 
   # sampling
   config.sampling = sampling = ml_collections.ConfigDict()
-  sampling.n_steps_each = 1
-  sampling.noise_removal = True
-  sampling.probability_flow = False
-  sampling.snr = 0.16
 
   # evaluation
   config.eval = evaluate = ml_collections.ConfigDict()
-  evaluate.begin_ckpt = 9
-  evaluate.end_ckpt = 26
   evaluate.batch_size = 128
-  evaluate.enable_sampling = False
-  evaluate.num_samples = 50000
-  evaluate.enable_loss = True
-  evaluate.enable_bpd = False
-  evaluate.bpd_dataset = 'test'
 
   # data
   config.data = data = ml_collections.ConfigDict()
   data.dataset = 'UKCP_Local'
-  data.dataset_name = 'bham64_ccpm-4x_1em_psl-sphum4th-temp4th-vort4th_pr'
   data.image_size = 64
   data.random_flip = False
-  data.centered = False
   data.uniform_dequantization = False
-  data.input_transform_dataset = None
+  data.time_inputs = False
+  data.centered = True
   data.input_transform_key = "stan"
   data.target_transform_key = "sqrturrecen"
-  data.time_inputs = False
 
   # model
   config.model = model = ml_collections.ConfigDict()
-  model.sigma_min = 0.01
-  model.sigma_max = 50
-  model.num_scales = 1000
-  model.beta_min = 0.1
-  model.beta_max = 20.
-  model.dropout = 0.1
-  model.embedding_type = 'fourier'
   model.loc_spec_channels = 0
+  model.num_scales = 0
+  model.ema_rate = 0.9999
 
   # optimization
   config.optim = optim = ml_collections.ConfigDict()
@@ -74,6 +82,5 @@ def get_default_configs():
 
   config.seed = 42
   config.device = torch.device('cuda:0') if torch.cuda.is_available() else torch.device('cpu')
-  config.deterministic = False
 
   return config
