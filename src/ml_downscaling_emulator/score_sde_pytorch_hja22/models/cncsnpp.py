@@ -71,10 +71,6 @@ class cNCSNpp(nn.Module):
     combine_method = config.model.progressive_combine.lower()
     combiner = functools.partial(Combine, method=combine_method)
 
-    # DEPRECATED: the old way to include a learnable feature map of location-specific parameters
-    if config.model.map_features > 0:
-      self.map = nn.Parameter(torch.zeros(config.model.map_features, config.data.image_size, config.data.image_size))
-
     modules = []
     # timestep/noise_level embedding; only for continuous training
     if embedding_type == 'fourier':
@@ -150,7 +146,7 @@ class cNCSNpp(nn.Module):
     else:
       cond_time_channels = 0
 
-    channels = cond_var_channels + cond_time_channels + output_channels + config.model.map_features + config.model.loc_spec_channels
+    channels = cond_var_channels + cond_time_channels + output_channels + config.model.loc_spec_channels
     if progressive_input != 'none':
       input_pyramid_ch = channels
 
@@ -257,9 +253,6 @@ class cNCSNpp(nn.Module):
 
     # combine the modelled data and the conditioning inputs
     x = torch.cat([x, cond], dim=1)
-    # DEPRECATED: old way to add a map of location-specific features to input
-    if self.config.model.map_features > 0:
-      x = torch.cat([x, self.map.broadcast_to((x.shape[0], *self.map.shape))], dim=1)
     # timestep/noise_level embedding; only for continuous training
     modules = self.all_modules
     m_idx = 0
