@@ -13,7 +13,7 @@ TIME_RANGE = (
 )
 
 
-class XRDataset(Dataset):
+class UKCP18Dataset(Dataset):
     def __init__(self, ds, variables, target_variables, time_range):
         self.ds = ds
         self.variables = variables
@@ -62,7 +62,7 @@ class XRDataset(Dataset):
         )
 
     def __len__(self):
-        return len(self.ds.time)
+        return len(self.ds.time) * len(self.ds.ensemble_member)
 
     def __getitem__(self, idx):
         subds = self.sel(idx)
@@ -77,14 +77,6 @@ class XRDataset(Dataset):
         time = subds["time"].values.reshape(-1)
 
         return cond, x, time
-
-    def sel(self, idx):
-        return self.ds.isel(time=idx)
-
-
-class EMXRDataset(XRDataset):
-    def __len__(self):
-        return len(self.ds.time) * len(self.ds.ensemble_member)
 
     def sel(self, idx):
         em_idx, time_idx = divmod(idx, len(self.ds.time))
@@ -104,7 +96,7 @@ def build_dataloader(
     time_range = None
     if include_time_inputs:
         time_range = TIME_RANGE
-    xr_dataset = EMXRDataset(xr_data, variables, target_variables, time_range)
+    xr_dataset = UKCP18Dataset(xr_data, variables, target_variables, time_range)
     data_loader = DataLoader(
         xr_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate
     )
