@@ -20,25 +20,20 @@
 # and MLFlow, and iterating by epoch using PyTorch DataLoaders
 
 # pylint: skip-file
-"""Training and evaluation for score-based generative models. """
+"""Training for score-based generative models. """
 
 import itertools
 import os
 
 from codetiming import Timer
-# import tensorflow as tf
-# import tensorflow_gan as tfgan
 import logging
 # Keep the import below for registering all model definitions
-# from models import ddpm, ncsnv2, ncsnpp
-from .models import cunet
-from .models import cncsnpp
+from .models import cunet, cncsnpp
 from . import losses
 from .models.location_params import LocationParams
 from . import sampling
 from .models import utils as mutils
 from .models.ema import ExponentialMovingAverage
-# import .evaluation
 from . import likelihood
 from . import sde_lib
 from absl import flags
