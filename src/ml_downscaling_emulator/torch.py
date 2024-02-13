@@ -5,6 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 
 from mlde_utils.training.dataset import get_dataset, get_variables
 
+"""Loading UKCP18 data into PyTorch"""
+
 TIME_RANGE = (
     cftime.Datetime360Day(1980, 12, 1, 12, 0, 0, 0, has_year_zero=True),
     cftime.Datetime360Day(2080, 11, 30, 12, 0, 0, 0, has_year_zero=True),

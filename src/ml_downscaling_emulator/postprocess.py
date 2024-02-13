@@ -7,6 +7,8 @@ from mlde_utils.data.remapcon import Remapcon
 from mlde_utils.data.shift_lon_break import ShiftLonBreak
 from mlde_utils.data.select_gcm_domain import SelectGCMDomain
 
+"""Postprocessing of samples from an emulator."""
+
 
 def _get_cdf(x, xbins):
     pdf, _ = np.histogram(x, xbins)

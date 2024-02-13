@@ -1,6 +1,7 @@
 import torch
 
 class LocationParams(torch.nn.Module):
+    """Module for adding parameters relating to each input grid box that are learnt during training"""
     def __init__(self, n_channels, size) -> None:
         super().__init__()
 

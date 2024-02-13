@@ -35,7 +35,7 @@ class Dense(nn.Module):
 
 @utils.register_model(name='cunet')
 class ScoreNet(nn.Module):
-  """A time-dependent score-based model built upon U-Net architecture."""
+  """A time-dependent score-based model built upon U-Net architecture with conditioning input."""
 
   def __init__(self, config):
     """Initialize a time-dependent score-based network.

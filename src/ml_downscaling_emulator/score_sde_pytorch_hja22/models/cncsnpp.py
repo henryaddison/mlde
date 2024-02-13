@@ -39,7 +39,7 @@ default_initializer = layers.default_init
 
 @utils.register_model(name='cncsnpp')
 class cNCSNpp(nn.Module):
-  """NCSN++ model"""
+  """NCSN++ model with conditioning input"""
 
   def __init__(self, config):
     super().__init__()
