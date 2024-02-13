@@ -3,7 +3,7 @@
 set -euo pipefail
 
 config_name="ukcp18_cunet_continuous"
-dataset="bham_gcmx-4x_12em_psl-temp4th-vort4th_eqvt_random-season"
+dataset="bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-historic"
 
 sde="subvpsde"
 workdir="output/test/${sde}/${config_name}/test-run"
