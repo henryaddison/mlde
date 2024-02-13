@@ -120,7 +120,7 @@ def load_model(config, ckpt_filename):
     state = _init_state(config)
     state, loaded = restore_checkpoint(ckpt_filename, state, config.device)
     assert loaded, "Did not load state from checkpoint"
-    state["ema"].copy_to(state["score_model"].parameters())
+    state["ema"].copy_to(state["model"].parameters())
 
     # Sampling
     num_output_channels = len(get_variables(config.data.dataset_name)[1])
