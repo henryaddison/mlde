@@ -34,12 +34,9 @@ from ml_downscaling_emulator.score_sde_pytorch_hja22.utils import restore_checkp
 import ml_downscaling_emulator.score_sde_pytorch_hja22.models as models  # noqa: F401
 from ml_downscaling_emulator.score_sde_pytorch_hja22.models import utils as mutils
 
-# from score_sde_pytorch_hja22.models import ncsnv2
-# from score_sde_pytorch_hja22.models import ncsnpp
 from ml_downscaling_emulator.score_sde_pytorch_hja22.models import cncsnpp  # noqa: F401
 from ml_downscaling_emulator.score_sde_pytorch_hja22.models import cunet  # noqa: F401
 
-# from score_sde_pytorch_hja22.models import ddpm as ddpm_model
 from ml_downscaling_emulator.score_sde_pytorch_hja22.models import (  # noqa: F401
     layerspp,  # noqa: F401
 )  # noqa: F401
@@ -49,26 +46,49 @@ from ml_downscaling_emulator.score_sde_pytorch_hja22.models import (  # noqa: F4
 )  # noqa: F401
 import ml_downscaling_emulator.score_sde_pytorch_hja22.sampling as sampling
 
-# from likelihood import get_likelihood_fn
 from ml_downscaling_emulator.score_sde_pytorch_hja22.sde_lib import (
     VESDE,
     VPSDE,
     subVPSDE,
 )
 
-# from score_sde_pytorch_hja22.sampling import (ReverseDiffusionPredictor,
-#                       LangevinCorrector,
-#                       EulerMaruyamaPredictor,
-#                       AncestralSamplingPredictor,
-#                       NoneCorrector,
-#                       NonePredictor,
-#                       AnnealedLangevinDynamics)
-
-
 logger = logging.getLogger()
 logger.setLevel("INFO")
 
 app = typer.Typer()
+
+
+def load_config(config_path):
+    logger.info(f"Loading config from {config_path}")
+    with open(config_path) as f:
+        config = config_dict.ConfigDict(yaml.unsafe_load(f))
+
+    return config
+
+
+def _init_state(config):
+    score_model = mutils.create_model(config)
+    location_params = LocationParams(
+        config.model.loc_spec_channels, config.data.image_size
+    )
+    location_params = location_params.to(config.device)
+    location_params = torch.nn.DataParallel(location_params)
+    optimizer = get_optimizer(
+        config, itertools.chain(score_model.parameters(), location_params.parameters())
+    )
+    ema = ExponentialMovingAverage(
+        itertools.chain(score_model.parameters(), location_params.parameters()),
+        decay=config.model.ema_rate,
+    )
+    state = dict(
+        step=0,
+        optimizer=optimizer,
+        model=score_model,
+        location_params=location_params,
+        ema=ema,
+    )
+
+    return state
 
 
 def load_model(config, ckpt_filename):
@@ -96,33 +116,11 @@ def load_model(config, ckpt_filename):
     else:
         raise RuntimeError(f"Unknown SDE {config.training.sde}")
 
-    random_seed = 0  # @param {"type": "integer"}  # noqa: F841
-
-    sigmas = mutils.get_sigmas(config)  # noqa: F841
-    score_model = mutils.create_model(config)
-    location_params = LocationParams(
-        config.model.loc_spec_channels, config.data.image_size
-    )
-    location_params = location_params.to(config.device)
-    location_params = torch.nn.DataParallel(location_params)
-    optimizer = get_optimizer(
-        config, itertools.chain(score_model.parameters(), location_params.parameters())
-    )
-    ema = ExponentialMovingAverage(
-        itertools.chain(score_model.parameters(), location_params.parameters()),
-        decay=config.model.ema_rate,
-    )
-    state = dict(
-        step=0,
-        optimizer=optimizer,
-        model=score_model,
-        location_params=location_params,
-        ema=ema,
-    )
-
+    # sigmas = mutils.get_sigmas(config)  # noqa: F841
+    state = _init_state(config)
     state, loaded = restore_checkpoint(ckpt_filename, state, config.device)
     assert loaded, "Did not load state from checkpoint"
-    ema.copy_to(score_model.parameters())
+    state["ema"].copy_to(state["score_model"].parameters())
 
     # Sampling
     num_output_channels = len(get_variables(config.data.dataset_name)[1])
@@ -169,14 +167,6 @@ def np_samples_to_xr(np_samples, target_transform, coords, cf_data_vars):
     samples_ds = samples_ds.rename({"target_pr": "pred_pr"})
     samples_ds["pred_pr"] = samples_ds["pred_pr"].assign_attrs(pred_pr_attrs)
     return samples_ds
-
-
-def load_config(config_path):
-    logger.info(f"Loading config from {config_path}")
-    with open(config_path) as f:
-        config = config_dict.ConfigDict(yaml.unsafe_load(f))
-
-    return config
 
 
 def sample(sampling_fn, state, config, eval_dl, target_transform):
