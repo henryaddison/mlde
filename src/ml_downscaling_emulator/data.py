@@ -1,11 +1,11 @@
+"""Loading UKCP18 data into PyTorch"""
+
 import cftime
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
 from mlde_utils.training.dataset import get_dataset, get_variables
-
-"""Loading UKCP18 data into PyTorch"""
 
 TIME_RANGE = (
     cftime.Datetime360Day(1980, 12, 1, 12, 0, 0, 0, has_year_zero=True),

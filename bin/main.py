@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Training and evaluation"""
+"""Training"""
 
 import ml_downscaling_emulator.score_sde_pytorch_hja22.run_lib as run_lib
 from absl import app
@@ -56,9 +56,6 @@ def main(argv):
         logger.setLevel("INFO")
         # Run the training pipeline
         run_lib.train(FLAGS.config, FLAGS.workdir)
-    elif FLAGS.mode == "eval":
-        # Run the evaluation pipeline
-        run_lib.evaluate(FLAGS.config, FLAGS.workdir, FLAGS.eval_folder)
     else:
         raise ValueError(f"Mode {FLAGS.mode} not recognized.")
 

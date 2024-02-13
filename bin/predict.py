@@ -1,3 +1,5 @@
+"""Generate samples"""
+
 import itertools
 import os
 from pathlib import Path
