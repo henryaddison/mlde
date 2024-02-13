@@ -15,8 +15,6 @@ def get_default_configs():
 
   # data
   data = config.data
-  data.dataset_name = 'bham_gcmx-4x_12em_psl-temp4th-vort4th_eqvt_random-season'
-  data.input_transform_key = "stan"
-  data.target_transform_key = "sqrturrecen"
+  data.dataset_name = 'bham_gcmx-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season'
 
   return config

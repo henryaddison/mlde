@@ -40,15 +40,15 @@ def get_default_configs():
 
   # data
   config.data = data = ml_collections.ConfigDict()
-  data.dataset = 'XR'
-  data.dataset_name = '2.2km-coarsened-8x_london_vorticity850_random'
+  data.dataset = 'UKCP18'
+  data.dataset_name = 'bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season'
   data.image_size = 64
   data.random_flip = False
   data.centered = False
   data.uniform_dequantization = False
   data.input_transform_dataset = None
-  data.input_transform_key = "pixelmmsstanur"
-  data.target_transform_key = "v1"
+  data.input_transform_key = "stan"
+  data.target_transform_key = "sqrturrecen"
   data.time_inputs = False
 
   # model
@@ -60,8 +60,7 @@ def get_default_configs():
   model.beta_max = 20.
   model.dropout = 0.1
   model.embedding_type = 'fourier'
-  model.map_features = 0 # DEPRECATED, use loc_spec_channels
-  model.loc_spec_channels = 8
+  model.loc_spec_channels = 0
 
   # optimization
   config.optim = optim = ml_collections.ConfigDict()
