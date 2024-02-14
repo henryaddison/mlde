@@ -240,6 +240,7 @@ def main(
     epoch: int = typer.Option(...),
     batch_size: int = None,
     num_samples: int = 3,
+    input_transform_dataset: str = None,
     input_transform_key: str = None,
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
 ):
@@ -247,6 +248,10 @@ def main(
     config = load_config(config_path)
     if batch_size is not None:
         config.eval.batch_size = batch_size
+    if input_transform_dataset is not None:
+        config.data.input_transform_dataset = input_transform_dataset
+    else:
+        config.data.input_transform_dataset = dataset
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
 
@@ -254,7 +259,7 @@ def main(
         workdir=workdir,
         checkpoint=f"epoch-{epoch}",
         dataset=dataset,
-        input_xfm=config.data.input_transform_key,
+        input_xfm=f"{config.data.input_transform_dataset}-{config.data.input_transform_key}",
         split=split,
         ensemble_member=ensemble_member,
     )
@@ -270,6 +275,7 @@ def main(
     eval_dl, _, target_transform = get_dataloader(
         dataset,
         config.data.dataset_name,
+        config.data.input_transform_dataset,
         config.data.input_transform_key,
         config.data.target_transform_key,
         transform_dir,
