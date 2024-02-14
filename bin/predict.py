@@ -248,10 +248,11 @@ def main(
     config = load_config(config_path)
     if batch_size is not None:
         config.eval.batch_size = batch_size
-    if input_transform_dataset is not None:
-        config.data.input_transform_dataset = input_transform_dataset
-    else:
-        config.data.input_transform_dataset = dataset
+    with config.unlocked():
+        if input_transform_dataset is not None:
+            config.data.input_transform_dataset = input_transform_dataset
+        else:
+            config.data.input_transform_dataset = dataset
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
 
