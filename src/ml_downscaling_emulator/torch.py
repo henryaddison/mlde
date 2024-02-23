@@ -112,6 +112,7 @@ def build_dataloader(
 def get_dataloader(
     active_dataset_name,
     model_src_dataset_name,
+    input_transform_dataset_name,
     input_transform_key,
     target_transform_key,
     transform_dir,
@@ -127,6 +128,7 @@ def get_dataloader(
     Args:
       active_dataset_name: Name of dataset from which to load data splits
       model_src_dataset_name: Name of dataset used to train the diffusion model (may be the same)
+      input_transform_dataset_name: Name of dataset to use for fitting input transform (may be the same as active_dataset_name or model_src_dataset_name)
       transform_dir: Path to where transforms should be stored
       input_transform_key: Name of input transform pipeline to use
       target_transform_key: Name of target transform pipeline to use
@@ -140,6 +142,7 @@ def get_dataloader(
     xr_data, transform, target_transform = get_dataset(
         active_dataset_name,
         model_src_dataset_name,
+        input_transform_dataset_name,
         input_transform_key,
         target_transform_key,
         transform_dir,

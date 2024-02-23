@@ -2,13 +2,14 @@ import glob
 import logging
 import os
 from pathlib import Path
+from typing import Callable
 import typer
 import xarray as xr
 
 from mlde_utils import samples_path, samples_glob, TIME_PERIODS
 from mlde_utils.training.dataset import open_raw_dataset_split
 
-from ml_downscaling_emulator.postprocess import xrqm
+from ml_downscaling_emulator.postprocess import xrqm, to_gcm_domain
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +24,50 @@ app = typer.Typer()
 @app.callback()
 def callback():
     pass
+
+
+def process_each_sample(
+    workdir: Path,
+    checkpoint: str,
+    dataset: str,
+    ensemble_member: str,
+    input_xfm: str,
+    split: str,
+    processing_func: Callable,
+    new_workdir: Path,
+):
+    samples_dirpath = samples_path(
+        workdir,
+        checkpoint=checkpoint,
+        input_xfm=input_xfm,
+        dataset=dataset,
+        split=split,
+        ensemble_member=ensemble_member,
+    )
+    logger.info(f"Iterating on samples in {samples_dirpath}")
+    for sample_filepath in samples_glob(samples_dirpath):
+        logger.info(f"Working on {sample_filepath}")
+        # open the samples
+        samples_ds = xr.open_dataset(sample_filepath)
+
+        processed_samples_ds = processing_func(samples_ds)
+
+        # save output
+        processed_sample_filepath = (
+            samples_path(
+                new_workdir,
+                checkpoint=checkpoint,
+                input_xfm=input_xfm,
+                dataset=dataset,
+                split=split,
+                ensemble_member=ensemble_member,
+            )
+            / sample_filepath.name
+        )
+
+        logger.info(f"Saving to {processed_sample_filepath}")
+        processed_sample_filepath.parent.mkdir(parents=True, exist_ok=True)
+        processed_samples_ds.to_netcdf(processed_sample_filepath)
 
 
 @app.command()
@@ -103,44 +148,53 @@ def qm(
         )[0]
     )["pred_pr"]
 
-    ml_eval_samples_dirpath = samples_path(
-        workdir,
-        checkpoint=checkpoint,
-        input_xfm=eval_input_xfm,
-        dataset=eval_dataset,
-        split=split,
-        ensemble_member=ensemble_member,
-    )
-    logger.info(f"QMapping samplesin {ml_eval_samples_dirpath}")
-    for sample_filepath in samples_glob(ml_eval_samples_dirpath):
-        logger.info(f"Working on {sample_filepath}")
-        # open the samples to be qmapped
-        ml_eval_ds = xr.open_dataset(sample_filepath)
-
+    def process_samples(ds):
         # do the qmapping
-        qmapped_eval_da = xrqm(sim_train_da, ml_train_da, ml_eval_ds["pred_pr"])
+        qmapped_eval_da = xrqm(sim_train_da, ml_train_da, ds["pred_pr"])
 
-        qmapped_eval_ds = ml_eval_ds.copy()
-        qmapped_eval_ds["pred_pr"] = qmapped_eval_da
+        processed_samples_ds = ds.copy()
+        processed_samples_ds["pred_pr"] = qmapped_eval_da
 
-        # save output
-        new_workdir = workdir / "postprocess" / "qm"
+        return processed_samples_ds
 
-        qmapped_sample_filepath = (
-            samples_path(
-                new_workdir,
-                checkpoint=checkpoint,
-                input_xfm=eval_input_xfm,
-                dataset=eval_dataset,
-                split=split,
-                ensemble_member=ensemble_member,
-            )
-            / sample_filepath.name
+    process_each_sample(
+        workdir,
+        checkpoint,
+        eval_dataset,
+        ensemble_member,
+        eval_input_xfm,
+        split,
+        process_samples,
+        new_workdir=workdir / "postprocess" / "qm",
+    )
+
+
+@app.command()
+def gcmify(
+    workdir: Path,
+    checkpoint: str = typer.Option(...),
+    dataset: str = typer.Option(...),
+    input_xfm: str = typer.Option(...),
+    split: str = typer.Option(...),
+    ensemble_member: str = typer.Option(...),
+):
+    def process_samples(ds):
+        ds = to_gcm_domain(ds.sel(ensemble_member=ensemble_member))
+        ds["pred_pr"] = ds["pred_pr"].expand_dims(
+            {"ensemble_member": [ensemble_member]}
         )
+        return ds
 
-        logger.info(f"Saving to {qmapped_sample_filepath}")
-        qmapped_sample_filepath.parent.mkdir(parents=True, exist_ok=True)
-        qmapped_eval_ds.to_netcdf(qmapped_sample_filepath)
+    process_each_sample(
+        workdir,
+        checkpoint,
+        dataset,
+        ensemble_member,
+        input_xfm,
+        split,
+        process_samples,
+        new_workdir=workdir / "postprocess" / "gcm-grid",
+    )
 
 
 @app.command()

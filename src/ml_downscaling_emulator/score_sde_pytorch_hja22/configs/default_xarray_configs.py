@@ -46,6 +46,7 @@ def get_default_configs():
   data.random_flip = False
   data.centered = False
   data.uniform_dequantization = False
+  data.input_transform_dataset = None
   data.input_transform_key = "pixelmmsstanur"
   data.target_transform_key = "v1"
   data.time_inputs = False

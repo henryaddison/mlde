@@ -79,6 +79,7 @@ def train(config, workdir):
     train_dl, _, _ = get_dataloader(
         config.data.dataset_name,
         config.data.dataset_name,
+        config.data.dataset_name,
         config.data.input_transform_key,
         config.data.target_transform_key,
         transform_dir,
@@ -89,6 +90,7 @@ def train(config, workdir):
         evaluation=False,
     )
     val_dl, _, _ = get_dataloader(
+        config.data.dataset_name,
         config.data.dataset_name,
         config.data.dataset_name,
         config.data.input_transform_key,
