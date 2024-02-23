@@ -1,4 +1,4 @@
-# ML Downscaling Emulator 
+# ML Downscaling Emulator
 
 Forked from PyTorch implementation for the paper [Score-Based Generative Modeling through Stochastic Differential Equations](https://openreview.net/forum?id=PxTIG12RRHS)
 
@@ -6,11 +6,10 @@ by [Yang Song](https://yang-song.github.io), [Jascha Sohl-Dickstein](http://www.
 
 ## Dependencies
 
-1. Create conda environment: `conda env create -f environment.lock.yml`
-2. Clone and install https://github.com/henryaddison/mlde_utils into the environment: e.g. `pip install -e ../mlde_utils`
-3. Install ml_downscaling_emulator locally: `pip install -e .`
-4. Install unet code: `git clone --depth 1 git@github.com:henryaddison/Pytorch-UNet src/ml_downscaling_emulator/unet`
-5. Configure necessary environment variables: `DERVIED_DATA` and `KK_SLACK_WH_URL`
+1. Create conda environment: `conda env create -f environment.lock.yml` (or add dependencies to your own `conda env install -f environment.txt`)
+2. Install ml_downscaling_emulator locally: `pip install -e .`
+3. Install unet code: `git clone --depth 1 git@github.com:henryaddison/Pytorch-UNet src/ml_downscaling_emulator/unet`
+4. Configure necessary environment variables: `DERVIED_DATA` and `KK_SLACK_WH_URL`
 
 ### Usage
 
@@ -42,7 +41,7 @@ main.py:
 *  `workdir` is the path that stores all artifacts of one experiment, like checkpoints, samples, and evaluation results.
 
 * `mode` is  "train". When set to "train", it starts the training of a new model, or resumes the training of an old model if its meta-checkpoints (for resuming running after pre-emption in a cloud environment) exist in `workdir/checkpoints-meta` .
-  
+
   These functionalities can be configured through config files, or more conveniently, through the command-line support of the `ml_collections` package. For example, to generate samples and evaluate sample quality, supply the  `--config.eval.enable_sampling` flag; to compute log-likelihoods, supply the `--config.eval.enable_bpd` flag, and specify `--config.eval.dataset=train/test` to indicate whether to compute the likelihoods on the training or test dataset.
 
 #### Sampling
@@ -60,7 +59,7 @@ TODO
 
 ## References
 
-This code based on the following work: 
+This code based on the following work:
 ```bib
 @inproceedings{
   song2021scorebased,
