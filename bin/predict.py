@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from codetiming import Timer
+from dotenv import load_dotenv
 from knockknock import slack_sender
 from ml_collections import config_dict
 import numpy as np
@@ -52,8 +53,14 @@ from ml_downscaling_emulator.score_sde_pytorch_hja22.sde_lib import (
     subVPSDE,
 )
 
+load_dotenv()  # take environment variables from .env.
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s - %(filename)s - %(asctime)s - %(message)s",
+)
 logger = logging.getLogger()
-logger.setLevel("INFO")
+logger.setLevel(os.environ.get("LOG_LEVEL", "INFO").upper())
 
 app = typer.Typer()
 

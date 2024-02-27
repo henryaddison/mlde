@@ -1,9 +1,8 @@
 name: cuda-downscaling
 channels:
   - pytorch
-  - pyviz
   - conda-forge
-  - defaults
+  - nodefaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_kmp_llvm
@@ -42,12 +41,12 @@ dependencies:
   - brotlipy=0.7.0=py39hb9d737c_1005
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2023.5.7=hbcca054_0
+  - ca-certificates=2024.2.2=hbcca054_0
   - cachetools=5.2.0=pyhd8ed1ab_0
   - cairo=1.16.0=ha61ee94_1014
   - cartopy=0.21.1=py39h6e7ad6e_0
   - cdo=2.1.0=h15029e1_0
-  - certifi=2023.5.7=pyhd8ed1ab_0
+  - certifi=2024.2.2=pyhd8ed1ab_0
   - cf-units=3.1.1=py39h2ae25f5_2
   - cffi=1.15.1=py39he91dace_3
   - cfgv=3.3.1=pyhd8ed1ab_0
@@ -224,7 +223,7 @@ dependencies:
   - oauthlib=3.2.2=pyhd8ed1ab_0
   - openh264=2.1.1=h780b84a_0
   - openjpeg=2.5.0=h7d73246_1
-  - openssl=3.1.0=hd590300_3
+  - openssl=3.2.1=hd590300_0
   - orc=1.8.1=hfdbbad2_0
   - ossuuid=1.6.2=hf484d3e_1000
   - packaging=21.3=pyhd8ed1ab_0
@@ -269,6 +268,7 @@ dependencies:
   - python=3.9.15=hba424b6_0_cpython
   - python-cdo=1.5.7=pyhd8ed1ab_0
   - python-dateutil=2.8.2=pyhd8ed1ab_0
+  - python-dotenv=1.0.1=pyhd8ed1ab_0
   - python-telegram-bot=13.15=pyhd8ed1ab_0
   - python-xxhash=3.0.0=py39hb9d737c_2
   - python_abi=3.9=3_cp39
@@ -368,4 +368,4 @@ dependencies:
       - mlde-utils==0.0.4
       - netcdf4==1.6.3
       - python-cmethods==1.0.1
-prefix: /home/henry/mambaforge/envs/cuda-downscaling
+prefix: /home/henry/miniforge3/envs/cuda-downscaling
