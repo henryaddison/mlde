@@ -56,11 +56,10 @@ from ml_downscaling_emulator.score_sde_pytorch_hja22.sde_lib import (
 load_dotenv()  # take environment variables from .env.
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
     format="%(levelname)s - %(filename)s - %(asctime)s - %(message)s",
 )
 logger = logging.getLogger()
-logger.setLevel(os.environ.get("LOG_LEVEL", "INFO").upper())
 
 app = typer.Typer()
 
