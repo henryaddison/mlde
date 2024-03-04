@@ -35,7 +35,7 @@ def queue_cmd(duration, memory):
         "-m": str(memory),
         "-q": "cnu,gpu",
         "-t": str(duration),
-        "--condaenv": "cuda-downscaling",
+        "--condaenv": "mv-mlde",
     }
 
     return queue_basecmd + [arg for item in queue_opts.items() for arg in item]
