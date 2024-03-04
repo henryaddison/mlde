@@ -1,4 +1,4 @@
-"""Loading UKCP18 data into PyTorch"""
+"""Loading UKCP Local data into PyTorch"""
 
 import cftime
 import numpy as np
@@ -13,7 +13,7 @@ TIME_RANGE = (
 )
 
 
-class UKCP18Dataset(Dataset):
+class UKCPLocalDataset(Dataset):
     def __init__(self, ds, variables, target_variables, time_range):
         self.ds = ds
         self.variables = variables
@@ -96,7 +96,7 @@ def build_dataloader(
     time_range = None
     if include_time_inputs:
         time_range = TIME_RANGE
-    xr_dataset = UKCP18Dataset(xr_data, variables, target_variables, time_range)
+    xr_dataset = UKCPLocalDataset(xr_data, variables, target_variables, time_range)
     data_loader = DataLoader(
         xr_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate
     )
