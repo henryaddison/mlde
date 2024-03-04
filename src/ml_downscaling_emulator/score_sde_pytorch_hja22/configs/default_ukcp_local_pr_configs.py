@@ -40,7 +40,7 @@ def get_default_configs():
 
   # data
   config.data = data = ml_collections.ConfigDict()
-  data.dataset = 'UKCP18'
+  data.dataset = 'UKCP_Local'
   data.dataset_name = 'bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season'
   data.image_size = 64
   data.random_flip = False

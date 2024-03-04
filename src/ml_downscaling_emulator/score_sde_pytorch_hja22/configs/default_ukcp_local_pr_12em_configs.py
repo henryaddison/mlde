@@ -1,7 +1,7 @@
 import ml_collections
 import torch
 
-from ml_downscaling_emulator.score_sde_pytorch_hja22.configs.default_ukcp18_configs import get_default_configs as get_base_configs
+from ml_downscaling_emulator.score_sde_pytorch_hja22.configs.default_ukcp_local_pr_configs import get_default_configs as get_base_configs
 
 
 def get_default_configs():
