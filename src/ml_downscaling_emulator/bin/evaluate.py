@@ -13,7 +13,7 @@ from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
 from mlde_utils.training.dataset import load_raw_dataset_split
 from ..deterministic import sampling
 from ..deterministic.utils import create_model, restore_checkpoint
-from ..torch import get_dataloader
+from ..data import get_dataloader
 
 
 logging.basicConfig(
