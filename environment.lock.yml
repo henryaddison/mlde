@@ -365,7 +365,7 @@ dependencies:
   - pip:
       - atpublic==3.1.1
       - flufl-lock==7.1.1
-      - mlde-utils==0.0.5
+      - mlde-utils==0.0.6
       - netcdf4==1.6.3
       - python-cmethods==1.0.1
 prefix: /home/henry/miniforge3/envs/cuda-downscaling
