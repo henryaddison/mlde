@@ -9,7 +9,7 @@ sde="subvpsde"
 workdir="output/test/${sde}/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/score_sde_pytorch_hja22/configs/${sde}/${config_name}.py"
 
-loc_spec_channels=1
+loc_spec_channels=0
 train_batch_size=2
 random_crop_size=32
 
