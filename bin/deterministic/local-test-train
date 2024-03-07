@@ -8,10 +8,10 @@ cpm_dataset="bham_gcmx-4x_12em_psl-temp4th-vort4th_eqvt_random-season"
 gcm_dataset="bham_60km-4x_12em_psl-temp4th-vort4th_eqvt_random-season"
 workdir="output/test/unet/test-run"
 
-config_path="src/ml_downscaling_emulator/deterministic/configs/default.py"
+config_path="src/ml_downscaling_emulator/deterministic/configs/ukcp_local_pr_unet.py"
 
-map_features=1
-train_batch_size=32
+map_features=0
+train_batch_size=4
 
 rm -rf ${workdir}
 WANDB_EXPERIMENT_NAME="test" python ${SCRIPT_DIR}/main.py --mode train --workdir ${workdir} --config ${config_path} --config.data.dataset_name=${cpm_dataset} --config.training.batch_size=${train_batch_size} --config.training.n_epochs=2 --config.data.time_inputs=True --config.model.name=debug

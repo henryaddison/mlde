@@ -19,6 +19,7 @@ def get_config():
     data.dataset_name = ""
     data.input_transform_key = "stan"
     data.target_transform_key = "sqrturrecen"
+    data.input_transform_dataset = None
     data.time_inputs = False
 
     config.model = model = ml_collections.ConfigDict()

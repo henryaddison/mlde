@@ -13,7 +13,7 @@ from mlde_utils import DatasetMetadata
 
 from ..training import log_epoch, track_run
 from .utils import restore_checkpoint, save_checkpoint, create_model
-from ..torch import get_dataloader
+from ..data import get_dataloader
 
 FLAGS = flags.FLAGS
 EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
