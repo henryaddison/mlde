@@ -164,8 +164,12 @@ def np_samples_to_xr(np_samples, target_transform, coords, cf_data_vars):
     # add ensemble member axis to np samples
     np_samples = np_samples[np.newaxis, :]
     pred_pr_var = (pred_pr_dims, np_samples, pred_pr_attrs)
-
-    data_vars = {**cf_data_vars, "target_pr": pred_pr_var}
+    raw_pred_var = (
+        pred_pr_dims,
+        np_samples,
+        {"grid_mapping": "rotated_latitude_longitude"},
+    )
+    data_vars = {**cf_data_vars, "target_pr": pred_pr_var, "raw_pred": raw_pred_var}
 
     samples_ds = target_transform.invert(
         xr.Dataset(data_vars=data_vars, coords=coords, attrs={})
