@@ -8,7 +8,7 @@ cpm_dataset="bham_gcmx-4x_12em_psl-temp4th-vort4th_eqvt_random-season"
 gcm_dataset="bham_60km-4x_12em_psl-temp4th-vort4th_eqvt_random-season"
 workdir="output/test/unet/test-run"
 
-config_path="src/ml_downscaling_emulator/deterministic/configs/ukcp_local_pr_unet.py"
+config_path="src/ml_downscaling_emulator/deterministic/configs/ukcp_local_12em_pr_unet.py"
 
 map_features=0
 train_batch_size=4
