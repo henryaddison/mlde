@@ -226,6 +226,9 @@ def merge(
 
         typer.echo(f"save to {output_filepath}")
         os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
-        xr.concat([xr.open_dataset(f) for f in pred_file_group], dim="time").to_netcdf(
-            output_filepath
-        )
+        xr.concat(
+            [xr.open_dataset(f) for f in pred_file_group],
+            dim="time",
+            join="exact",
+            data_vars="minimal",
+        ).to_netcdf(output_filepath)
