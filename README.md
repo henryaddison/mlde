@@ -9,7 +9,7 @@ by [Yang Song](https://yang-song.github.io), [Jascha Sohl-Dickstein](http://www.
 1. Create conda environment: `conda env create -f environment.lock.yml` (or add dependencies to your own `conda env install -f environment.txt`)
 2. Install ml_downscaling_emulator locally: `pip install -e .`
 3. Install unet code: `git clone --depth 1 git@github.com:henryaddison/Pytorch-UNet src/ml_downscaling_emulator/unet`
-4. Configure necessary environment variables: `DERVIED_DATA` and `KK_SLACK_WH_URL`
+4. Configure application behaviour with environment variables. See `.env.example` for variables that can be set.
 
 ## Usage
 
