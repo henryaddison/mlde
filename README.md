@@ -8,10 +8,12 @@ by [Yang Song](https://yang-song.github.io), [Jascha Sohl-Dickstein](http://www.
 
 ## Dependencies
 
-1. Create conda environment: `conda env create -f environment.lock.yml` (or add dependencies to your own `conda env install -f environment.txt`)
+1. Create conda environment: `conda env create -f environment.lock.yml` (or add dependencies to your own: `conda env install -f environment.txt`)
 2. Install ml_downscaling_emulator locally: `pip install -e .`
 3. Install unet code: `git clone --depth 1 git@github.com:henryaddison/Pytorch-UNet src/ml_downscaling_emulator/unet`
 4. Configure application behaviour with environment variables. See `.env.example` for variables that can be set.
+
+Any datasets are assumed to be found in `${DERIVED_DATA}/moose/nc-datasets/{dataset_name}/`. In particular, the config key config.data.dataset_name is the name of the dataset to use to train the model.
 
 ## Usage
 
@@ -22,7 +24,7 @@ tests/smoke-test
 ```
 
 Uses a simpler network to test the full training and sampling regime.
-Recommended to run with a sample of the dataset rather than the full thing.
+Recommended to run with a sample of the dataset.
 
 ### Training
 
@@ -54,8 +56,6 @@ main.py:
   * model: `cncsnpp`
   * continuous: train the model with continuously sampled time steps.
 
-Any datasets are assumed to be found in `${DERIVED_DATA}/moose/nc-datasets/{dataset_name}/`. In particular, the config key config.data.dataset_name is the name of the dataset to use to train the model.
-
 Functionalities can be configured through config files, or more conveniently, through the command-line support of the `ml_collections` package.
 
 
@@ -64,7 +64,12 @@ Functionalities can be configured through config files, or more conveniently, th
 Once have trained a model create samples from it with `bin/predict.py`, e.g.
 
 ```sh
-python bin/predict.py --checkpoint epoch-20 --num-samples 1 --dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --split test --input-transform-dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --input-transform-key pixelmmsstan --ensemble-member 01 ${DERVIED_DATA}/path/to/models/paper-12em
+python bin/predict.py --checkpoint epoch-20 --dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --split test  --ensemble-member 01 --input-transform-dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --input-transform-key pixelmmsstan --num-samples 1 ${DERVIED_DATA}/path/to/models/paper-12em
 ```
 
-This will use the checkpoint of the model in `${DERVIED_DATA}/path/to/models/paper-12em/checkpoints/{checkpoint}.pth` and model config from training `${DERVIED_DATA}/path/to/models/paper-12em/config.yml`. It will store samples generated in `${DERVIED_DATA}/path/to/models/paper-12em/samples/{dataset}/{input_transform_data}-{input_transform_key}/{split}/{ensemble_member}/`. Sample files and named like `predictions-{uuid}.nc`.
+This example command will:
+* use the checkpoint of the model in `${DERVIED_DATA}/path/to/models/paper-12em/checkpoints/{checkpoint}.pth` and model config from training `${DERVIED_DATA}/path/to/models/paper-12em/config.yml`.
+* store samples generated in `${DERVIED_DATA}/path/to/models/paper-12em/samples/{dataset}/{input_transform_data}-{input_transform_key}/{split}/{ensemble_member}/`. Sample files and named like `predictions-{uuid}.nc`.
+* generate samples conditioned on examples from ensemble member `01` in the `test` subset of the `bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season` dataset.
+* transform the inputs based on the `bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season` dataset using the `pixelmmsstan` approach.
+* generate 1 set of samples.
