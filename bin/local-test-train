@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-config_name="ukcp_local_pr_cunet_continuous"
+config_name="ukcp_local_pr_1em_cunet_continuous"
 dataset="bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-historic"
 
 sde="subvpsde"
