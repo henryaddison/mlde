@@ -15,8 +15,12 @@ by [Yang Song](https://yang-song.github.io), [Jascha Sohl-Dickstein](http://www.
 
 ### Smoke test
 
-`bin/local-test-train`
+```sh
+tests/smoke-test
+```
 
+Uses a simpler network to test the full training and sampling regime.
+Recommended to run with a sample of the dataset rather than the full thing.
 
 ### Training
 
