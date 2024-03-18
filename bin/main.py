@@ -16,7 +16,7 @@
 
 """Training"""
 
-import ml_downscaling_emulator.score_sde_pytorch_hja22.run_lib as run_lib
+import ml_downscaling_emulator.score_sde_pytorch.run_lib as run_lib
 from absl import app
 from absl import flags
 from ml_collections.config_flags import config_flags

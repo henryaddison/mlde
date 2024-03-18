@@ -14,7 +14,7 @@ def train_cmd(sde, workdir, config, config_overrides=list):
     train_basecmd = ["python", f"bin/main.py"]
 
     train_opts = {
-        "--config": f"src/ml_downscaling_emulator/score_sde_pytorch_hja22/configs/{sde}/{config}.py",
+        "--config": f"src/ml_downscaling_emulator/score_sde_pytorch/configs/{sde}/{config}.py",
         "--workdir": workdir,
         "--mode": "train",
     }

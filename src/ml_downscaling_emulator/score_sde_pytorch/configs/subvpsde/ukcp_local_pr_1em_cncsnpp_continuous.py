@@ -15,7 +15,7 @@
 
 # Lint as: python3
 """Training NCSN++ on precip data with sub-VP SDE."""
-from ml_downscaling_emulator.score_sde_pytorch_hja22.configs.default_ukcp_local_pr_1em_configs import get_default_configs
+from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_1em_configs import get_default_configs
 
 
 def get_config():
@@ -25,7 +25,6 @@ def get_config():
   training.sde = 'subvpsde'
   training.continuous = True
   training.reduce_mean = True
-  training.n_epochs = 300
 
   # sampling
   sampling = config.sampling
@@ -36,7 +35,6 @@ def get_config():
   # data
   data = config.data
   data.centered = True
-  data.dataset_name = 'bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-historic'
 
   # model
   model = config.model

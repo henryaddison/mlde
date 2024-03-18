@@ -7,7 +7,7 @@ dataset="bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-histor
 
 sde="subvpsde"
 workdir="output/test/${sde}/${config_name}/test-run"
-config_path="src/ml_downscaling_emulator/score_sde_pytorch_hja22/configs/${sde}/${config_name}.py"
+config_path="src/ml_downscaling_emulator/score_sde_pytorch/configs/${sde}/${config_name}.py"
 
 loc_spec_channels=0
 train_batch_size=2

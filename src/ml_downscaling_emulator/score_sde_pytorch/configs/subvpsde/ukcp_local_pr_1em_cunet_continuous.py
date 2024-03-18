@@ -15,7 +15,7 @@
 
 # Lint as: python3
 """Training conditional U-Net on precip data with sub-VP SDE."""
-from ml_downscaling_emulator.score_sde_pytorch_hja22.configs.default_ukcp_local_pr_1em_configs import get_default_configs
+from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_1em_configs import get_default_configs
 
 
 def get_config():

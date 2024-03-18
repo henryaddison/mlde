@@ -14,8 +14,8 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training NCSN++ on precip data with VE SDE."""
-from ml_downscaling_emulator.score_sde_pytorch_hja22.configs.default_ukcp_local_pr_1em_configs import get_default_configs
+"""Training UNet on XArray with VE SDE."""
+from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_1em_configs import get_default_configs
 
 
 def get_config():
@@ -31,9 +31,12 @@ def get_config():
   sampling.predictor = 'reverse_diffusion'
   sampling.corrector = 'langevin'
 
+  # data
+  data = config.data
+
   # model
   model = config.model
-  model.name = 'cncsnpp'
+  model.name = 'cunet'
   model.scale_by_sigma = True
   model.ema_rate = 0.999
   model.normalization = 'GroupNorm'
@@ -55,8 +58,5 @@ def get_config():
   model.init_scale = 0.
   model.fourier_scale = 16
   model.conv_size = 3
-
-  # data
-  data = config.data
 
   return config
