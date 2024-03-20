@@ -58,7 +58,7 @@ def sample(
     workdir: Path,
     dataset: str = typer.Option(...),
     split: str = "val",
-    epoch: int = typer.Option(...),
+    checkpoint: str = typer.Option(...),
     batch_size: int = None,
     num_samples: int = 1,
     input_transform_dataset: str = None,
@@ -81,7 +81,7 @@ def sample(
 
     output_dirpath = samples_path(
         workdir=workdir,
-        checkpoint=f"epoch-{epoch}",
+        checkpoint=checkpoint,
         dataset=dataset,
         input_xfm=f"{config.data.input_transform_dataset}-{config.data.input_transform_key}",
         split=split,
@@ -106,7 +106,7 @@ def sample(
         shuffle=False,
     )
 
-    ckpt_filename = os.path.join(workdir, "checkpoints", f"epoch_{epoch}.pth")
+    ckpt_filename = os.path.join(workdir, "checkpoints", f"{checkpoint}.pth")
     num_predictors = eval_dl.dataset[0][0].shape[0]
     state = load_model(config, num_predictors, ckpt_filename)
 
