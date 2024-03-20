@@ -19,8 +19,8 @@ classifiers = [
 dynamic = ["dependencies"]
 
 [project.urls]
-"Homepage" = "https://github.com/henryaddison/score_sde_pytorch"
-"Bug Tracker" = "https://github.com/henryaddison/score_sde_pytorch/issues"
+"Homepage" = "https://github.com/henryaddison/mlde"
+"Bug Tracker" = "https://github.com/henryaddison/mlde/issues"
 
 [project.scripts]
     mlde = "ml_downscaling_emulator.bin:app"
