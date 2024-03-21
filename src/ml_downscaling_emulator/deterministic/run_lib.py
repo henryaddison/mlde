@@ -208,7 +208,6 @@ def train(config, workdir):
         EXPERIMENT_NAME, run_name, run_config, [config.model.name, "baseline"], tb_dir
     ) as (wandb_run, tb_writer):
         # Fit model
-        wandb_run.watch(model, criterion=criterion, log_freq=100)
 
         logging.info("Starting training loop at epoch %d." % (initial_epoch,))
 
