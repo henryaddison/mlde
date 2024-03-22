@@ -180,11 +180,12 @@ def np_samples_to_xr(np_samples, target_transform, target_vars, coords, cf_data_
         pred_var = (pred_dims, np_var_pred, pred_attrs)
         raw_pred_var = (
             pred_dims,
+            np_var_pred,
             {"grid_mapping": "rotated_latitude_longitude"},
         )
         data_vars.update(
             {
-                var.replace("target_", "pred_"): pred_var,
+                var: pred_var,  # don't rename pred var until after inverting target transform
                 var.replace("target_", "raw_pred_"): raw_pred_var,
             }
         )
