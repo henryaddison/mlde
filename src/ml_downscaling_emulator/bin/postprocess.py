@@ -165,7 +165,7 @@ def qm(
         eval_input_xfm,
         split,
         process_samples,
-        new_workdir=workdir / "postprocess" / "qm",
+        new_workdir=workdir / "postprocess" / "qm-per-em",
     )
 
 
