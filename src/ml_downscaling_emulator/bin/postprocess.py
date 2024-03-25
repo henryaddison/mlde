@@ -119,6 +119,7 @@ def filter(
 def qm(
     workdir: Path,
     checkpoint: str = typer.Option(...),
+    sim_dataset: str = typer.Option(...),
     train_dataset: str = typer.Option(...),
     train_input_xfm: str = "stan",
     eval_dataset: str = typer.Option(...),
@@ -128,7 +129,7 @@ def qm(
 ):
     # to compute the mapping, use train split data
     # open train split of dataset for the target_pr
-    sim_train_da = open_raw_dataset_split(train_dataset, "train").sel(
+    sim_train_da = open_raw_dataset_split(sim_dataset, "train").sel(
         ensemble_member=ensemble_member
     )["target_pr"]
 
