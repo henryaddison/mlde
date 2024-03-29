@@ -35,7 +35,7 @@ def get_config():
   # data
   data = config.data
   data.centered = True
-  data.dataset_name = 'bham_gcmx-4x_2em_mv'
+  data.dataset_name = 'bham_ccpm-4x_12em_mv_ransom-season'
 
   # model
   model = config.model
