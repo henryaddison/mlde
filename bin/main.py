@@ -1,5 +1,6 @@
 # coding=utf-8
 # Copyright 2020 The Google Research Authors.
+# Modifications copyright 2024 Henry Addison
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Training and evaluation"""
+"""Training"""
 
-import ml_downscaling_emulator.score_sde_pytorch_hja22.run_lib as run_lib
+import ml_downscaling_emulator.score_sde_pytorch.run_lib as run_lib
 from absl import app
 from absl import flags
 from ml_collections.config_flags import config_flags
@@ -30,10 +31,7 @@ config_flags.DEFINE_config_file(
     "config", None, "Training configuration.", lock_config=True
 )
 flags.DEFINE_string("workdir", None, "Work directory.")
-flags.DEFINE_enum("mode", None, ["train", "eval"], "Running mode: train or eval")
-flags.DEFINE_string(
-    "eval_folder", "eval", "The folder name for storing evaluation results"
-)
+flags.DEFINE_enum("mode", None, ["train"], "Running mode: train")
 flags.mark_flags_as_required(["workdir", "config", "mode"])
 
 
@@ -55,9 +53,6 @@ def main(argv):
         logger.setLevel("INFO")
         # Run the training pipeline
         run_lib.train(FLAGS.config, FLAGS.workdir)
-    elif FLAGS.mode == "eval":
-        # Run the evaluation pipeline
-        run_lib.evaluate(FLAGS.config, FLAGS.workdir, FLAGS.eval_folder)
     else:
         raise ValueError(f"Mode {FLAGS.mode} not recognized.")
 

@@ -119,6 +119,7 @@ def filter(
 def qm(
     workdir: Path,
     checkpoint: str = typer.Option(...),
+    sim_dataset: str = typer.Option(...),
     train_dataset: str = typer.Option(...),
     train_input_xfm: str = "stan",
     eval_dataset: str = typer.Option(...),
@@ -128,7 +129,7 @@ def qm(
 ):
     # to compute the mapping, use train split data
     # open train split of dataset for the target_pr
-    sim_train_da = open_raw_dataset_split(train_dataset, "train").sel(
+    sim_train_da = open_raw_dataset_split(sim_dataset, "train").sel(
         ensemble_member=ensemble_member
     )["target_pr"]
 
@@ -165,7 +166,12 @@ def qm(
         eval_input_xfm,
         split,
         process_samples,
-        new_workdir=workdir / "postprocess" / "qm",
+        new_workdir=workdir
+        / "postprocess"
+        / "qm-per-em"
+        / sim_dataset
+        / train_dataset
+        / train_input_xfm,
     )
 
 
@@ -226,6 +232,9 @@ def merge(
 
         typer.echo(f"save to {output_filepath}")
         os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
-        xr.concat([xr.open_dataset(f) for f in pred_file_group], dim="time").to_netcdf(
-            output_filepath
-        )
+        xr.concat(
+            [xr.open_dataset(f) for f in pred_file_group],
+            dim="time",
+            join="exact",
+            data_vars="minimal",
+        ).to_netcdf(output_filepath)

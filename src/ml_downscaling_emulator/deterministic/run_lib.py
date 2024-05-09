@@ -13,7 +13,7 @@ from mlde_utils import DatasetMetadata
 
 from ..training import log_epoch, track_run
 from .utils import restore_checkpoint, save_checkpoint, create_model
-from ..torch import get_dataloader
+from ..data import get_dataloader
 
 FLAGS = flags.FLAGS
 EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
@@ -208,7 +208,6 @@ def train(config, workdir):
         EXPERIMENT_NAME, run_name, run_config, [config.model.name, "baseline"], tb_dir
     ) as (wandb_run, tb_writer):
         # Fit model
-        wandb_run.watch(model, criterion=criterion, log_freq=100)
 
         logging.info("Starting training loop at epoch %d." % (initial_epoch,))
 

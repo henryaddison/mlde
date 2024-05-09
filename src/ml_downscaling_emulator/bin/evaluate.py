@@ -13,7 +13,7 @@ from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
 from mlde_utils.training.dataset import load_raw_dataset_split
 from ..deterministic import sampling
 from ..deterministic.utils import create_model, restore_checkpoint
-from ..torch import get_dataloader
+from ..data import get_dataloader
 
 
 logging.basicConfig(
@@ -58,7 +58,7 @@ def sample(
     workdir: Path,
     dataset: str = typer.Option(...),
     split: str = "val",
-    epoch: int = typer.Option(...),
+    checkpoint: str = typer.Option(...),
     batch_size: int = None,
     num_samples: int = 1,
     input_transform_dataset: str = None,
@@ -71,16 +71,17 @@ def sample(
 
     if batch_size is not None:
         config.eval.batch_size = batch_size
-    if input_transform_dataset is not None:
-        config.data.input_transform_dataset = input_transform_dataset
-    else:
-        config.data.input_transform_dataset = dataset
+    with config.unlocked():
+        if input_transform_dataset is not None:
+            config.data.input_transform_dataset = input_transform_dataset
+        else:
+            config.data.input_transform_dataset = dataset
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
 
     output_dirpath = samples_path(
         workdir=workdir,
-        checkpoint=f"epoch-{epoch}",
+        checkpoint=checkpoint,
         dataset=dataset,
         input_xfm=f"{config.data.input_transform_dataset}-{config.data.input_transform_key}",
         split=split,
@@ -105,7 +106,7 @@ def sample(
         shuffle=False,
     )
 
-    ckpt_filename = os.path.join(workdir, "checkpoints", f"epoch_{epoch}.pth")
+    ckpt_filename = os.path.join(workdir, "checkpoints", f"{checkpoint}.pth")
     num_predictors = eval_dl.dataset[0][0].shape[0]
     state = load_model(config, num_predictors, ckpt_filename)
 

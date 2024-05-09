@@ -1,0 +1,33 @@
+name: CI
+
+on: [push]
+
+jobs:
+  ci-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - name: Clone repo
+      uses: actions/checkout@v4
+    - name: setup-micromamba
+      uses: mamba-org/setup-micromamba@v1.4.1
+      with:
+        environment-file: environment.lock.yml
+        init-shell: bash
+        cache-environment: true
+        post-cleanup: 'all'
+    - name: Install package
+      run: |
+        pip install -e .
+      shell: micromamba-shell {0}
+    - name: Install unet
+      uses: actions/checkout@v4
+      with:
+        repository: henryaddison/Pytorch-UNet
+        path: src/ml_downscaling_emulator/unet
+    - name: Test with pytest
+      run: |
+        pytest
+      shell: micromamba-shell {0}

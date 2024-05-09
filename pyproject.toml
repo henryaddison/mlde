@@ -16,18 +16,17 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
 ]
-dependencies = [
-  "flufl-lock",
-  "python-cmethods"
-]
+dynamic = ["dependencies"]
 
 [project.urls]
-"Homepage" = "https://github.com/henryaddison/score_sde_pytorch"
-"Bug Tracker" = "https://github.com/henryaddison/score_sde_pytorch/issues"
+"Homepage" = "https://github.com/henryaddison/mlde"
+"Bug Tracker" = "https://github.com/henryaddison/mlde/issues"
 
 [project.scripts]
     mlde = "ml_downscaling_emulator.bin:app"
 
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
 
 [tool.black]
-extend-exclude = '^/src/ml_downscaling_emulator/score_sde_pytorch_hja22/'
+extend-exclude = '^/src/ml_downscaling_emulator/score_sde_pytorch/'

@@ -1,8 +1,11 @@
+"""Generate samples"""
+
 import itertools
 import os
 from pathlib import Path
 
 from codetiming import Timer
+from dotenv import load_dotenv
 from knockknock import slack_sender
 from ml_collections import config_dict
 import numpy as np
@@ -15,58 +18,83 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import xarray as xr
 import yaml
 
-from ml_downscaling_emulator.torch import get_dataloader
+from ml_downscaling_emulator.data import get_dataloader
 from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
 from mlde_utils.training.dataset import get_variables
 
-from ml_downscaling_emulator.score_sde_pytorch_hja22.losses import get_optimizer
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models.ema import (
+from ml_downscaling_emulator.score_sde_pytorch.losses import get_optimizer
+from ml_downscaling_emulator.score_sde_pytorch.models.ema import (
     ExponentialMovingAverage,
 )
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models.location_params import (
+from ml_downscaling_emulator.score_sde_pytorch.models.location_params import (
     LocationParams,
 )
 
-from ml_downscaling_emulator.score_sde_pytorch_hja22.utils import restore_checkpoint
+from ml_downscaling_emulator.score_sde_pytorch.utils import restore_checkpoint
 
-import ml_downscaling_emulator.score_sde_pytorch_hja22.models as models  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models import utils as mutils
+import ml_downscaling_emulator.score_sde_pytorch.models as models  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import utils as mutils
 
-# from score_sde_pytorch_hja22.models import ncsnv2
-# from score_sde_pytorch_hja22.models import ncsnpp
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models import cncsnpp  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models import cunet  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import cncsnpp  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import cunet  # noqa: F401
 
-# from score_sde_pytorch_hja22.models import ddpm as ddpm_model
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models import (  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
     layerspp,  # noqa: F401
 )  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models import layers  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch_hja22.models import (  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import layers  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
     normalization,  # noqa: F401
 )  # noqa: F401
-import ml_downscaling_emulator.score_sde_pytorch_hja22.sampling as sampling
+import ml_downscaling_emulator.score_sde_pytorch.sampling as sampling
 
-# from likelihood import get_likelihood_fn
-from ml_downscaling_emulator.score_sde_pytorch_hja22.sde_lib import (
+from ml_downscaling_emulator.score_sde_pytorch.sde_lib import (
     VESDE,
     VPSDE,
     subVPSDE,
 )
 
-# from score_sde_pytorch_hja22.sampling import (ReverseDiffusionPredictor,
-#                       LangevinCorrector,
-#                       EulerMaruyamaPredictor,
-#                       AncestralSamplingPredictor,
-#                       NoneCorrector,
-#                       NonePredictor,
-#                       AnnealedLangevinDynamics)
+load_dotenv()  # take environment variables from .env.
 
-
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    format="%(levelname)s - %(filename)s - %(asctime)s - %(message)s",
+)
 logger = logging.getLogger()
-logger.setLevel("INFO")
 
 app = typer.Typer()
+
+
+def load_config(config_path):
+    logger.info(f"Loading config from {config_path}")
+    with open(config_path) as f:
+        config = config_dict.ConfigDict(yaml.unsafe_load(f))
+
+    return config
+
+
+def _init_state(config):
+    score_model = mutils.create_model(config)
+    location_params = LocationParams(
+        config.model.loc_spec_channels, config.data.image_size
+    )
+    location_params = location_params.to(config.device)
+    location_params = torch.nn.DataParallel(location_params)
+    optimizer = get_optimizer(
+        config, itertools.chain(score_model.parameters(), location_params.parameters())
+    )
+    ema = ExponentialMovingAverage(
+        itertools.chain(score_model.parameters(), location_params.parameters()),
+        decay=config.model.ema_rate,
+    )
+    state = dict(
+        step=0,
+        optimizer=optimizer,
+        model=score_model,
+        location_params=location_params,
+        ema=ema,
+    )
+
+    return state
 
 
 def load_model(config, ckpt_filename):
@@ -94,33 +122,11 @@ def load_model(config, ckpt_filename):
     else:
         raise RuntimeError(f"Unknown SDE {config.training.sde}")
 
-    random_seed = 0  # @param {"type": "integer"}  # noqa: F841
-
-    sigmas = mutils.get_sigmas(config)  # noqa: F841
-    score_model = mutils.create_model(config)
-    location_params = LocationParams(
-        config.model.loc_spec_channels, config.data.image_size
-    )
-    location_params = location_params.to(config.device)
-    location_params = torch.nn.DataParallel(location_params)
-    optimizer = get_optimizer(
-        config, itertools.chain(score_model.parameters(), location_params.parameters())
-    )
-    ema = ExponentialMovingAverage(
-        itertools.chain(score_model.parameters(), location_params.parameters()),
-        decay=config.model.ema_rate,
-    )
-    state = dict(
-        step=0,
-        optimizer=optimizer,
-        model=score_model,
-        location_params=location_params,
-        ema=ema,
-    )
-
+    # sigmas = mutils.get_sigmas(config)  # noqa: F841
+    state = _init_state(config)
     state, loaded = restore_checkpoint(ckpt_filename, state, config.device)
     assert loaded, "Did not load state from checkpoint"
-    ema.copy_to(score_model.parameters())
+    state["ema"].copy_to(state["model"].parameters())
 
     # Sampling
     num_output_channels = len(get_variables(config.data.dataset_name)[1])
@@ -158,8 +164,12 @@ def np_samples_to_xr(np_samples, target_transform, coords, cf_data_vars):
     # add ensemble member axis to np samples
     np_samples = np_samples[np.newaxis, :]
     pred_pr_var = (pred_pr_dims, np_samples, pred_pr_attrs)
-
-    data_vars = {**cf_data_vars, "target_pr": pred_pr_var}
+    raw_pred_var = (
+        pred_pr_dims,
+        np_samples,
+        {"grid_mapping": "rotated_latitude_longitude"},
+    )
+    data_vars = {**cf_data_vars, "target_pr": pred_pr_var, "raw_pred": raw_pred_var}
 
     samples_ds = target_transform.invert(
         xr.Dataset(data_vars=data_vars, coords=coords, attrs={})
@@ -167,14 +177,6 @@ def np_samples_to_xr(np_samples, target_transform, coords, cf_data_vars):
     samples_ds = samples_ds.rename({"target_pr": "pred_pr"})
     samples_ds["pred_pr"] = samples_ds["pred_pr"].assign_attrs(pred_pr_attrs)
     return samples_ds
-
-
-def load_config(config_path):
-    logger.info(f"Loading config from {config_path}")
-    with open(config_path) as f:
-        config = config_dict.ConfigDict(yaml.unsafe_load(f))
-
-    return config
 
 
 def sample(sampling_fn, state, config, eval_dl, target_transform):
@@ -237,7 +239,7 @@ def main(
     workdir: Path,
     dataset: str = typer.Option(...),
     split: str = "val",
-    epoch: int = typer.Option(...),
+    checkpoint: str = typer.Option(...),
     batch_size: int = None,
     num_samples: int = 3,
     input_transform_dataset: str = None,
@@ -258,7 +260,7 @@ def main(
 
     output_dirpath = samples_path(
         workdir=workdir,
-        checkpoint=f"epoch-{epoch}",
+        checkpoint=checkpoint,
         dataset=dataset,
         input_xfm=f"{config.data.input_transform_dataset}-{config.data.input_transform_key}",
         split=split,
@@ -288,7 +290,7 @@ def main(
         shuffle=False,
     )
 
-    ckpt_filename = os.path.join(workdir, "checkpoints", f"epoch_{epoch}.pth")
+    ckpt_filename = os.path.join(workdir, "checkpoints", f"{checkpoint}.pth")
     logger.info(f"Loading model from {ckpt_filename}")
     state, sampling_fn = load_model(config, ckpt_filename)
 
