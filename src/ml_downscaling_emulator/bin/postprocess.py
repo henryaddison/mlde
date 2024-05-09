@@ -91,7 +91,7 @@ def filter(
         split=split,
         ensemble_member=ensemble_member,
     )
-    os.makedirs(filtered_samples_dirpath, exist_ok=False)
+    os.makedirs(filtered_samples_dirpath, exist_ok=True)
 
     samples_filepaths_to_filter = samples_path(
         workdir,
@@ -102,12 +102,16 @@ def filter(
         ensemble_member=ensemble_member,
     )
 
-    logger.info(f"Found for filtering: {samples_filepaths_to_filter}")
+    logger.debug(f"Found for filtering: {samples_filepaths_to_filter}")
     for sample_filepath in samples_glob(samples_filepaths_to_filter):
-        logger.info(f"Working on {sample_filepath}")
+        logger.debug(f"Working on {sample_filepath}")
         samples_ds = xr.open_dataset(sample_filepath)
 
         filtered_samples_filepath = filtered_samples_dirpath / sample_filepath.name
+
+        if filtered_samples_filepath.exists():
+            logger.warning(f"Skipping {filtered_samples_filepath} as already exists")
+            continue
 
         logger.info(f"Saving to {filtered_samples_filepath}")
         samples_ds.sel(time=slice(*TIME_PERIODS[time_period])).to_netcdf(
