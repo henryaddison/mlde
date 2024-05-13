@@ -10,7 +10,7 @@ Diffusion model implementation forked from PyTorch implementation for the paper 
 2. Create conda environment: `conda env create -f environment.lock.yml` (or add dependencies to your own: `conda env install -f environment.txt`)
 3. Activate the conda environment (if not already done so)
 4. Install ml_downscaling_emulator locally: `pip install -e .`
-5. Install unet code: `git clone --depth 1 git@github.com:henryaddison/Pytorch-UNet src/ml_downscaling_emulator/unet`
+5. Install unet code: `git clone --depth 1 https://github.com/henryaddison/Pytorch-UNet.git src/ml_downscaling_emulator/unet`
 6. Configure application behaviour with environment variables. See `.env.example` for variables that can be set.
 
 Any datasets are assumed to be found in `${DERIVED_DATA}/moose/nc-datasets/{dataset_name}/`. In particular, the config key config.data.dataset_name is the name of the dataset to use to train the model.
