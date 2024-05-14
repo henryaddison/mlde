@@ -14,7 +14,8 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training conditional U-Net on precip data with sub-VP SDE."""
+"""Training conditional U-Net on precip data with sub-VP SDE.
+DEBUGGING ONLY"""
 from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_1em_configs import get_default_configs
 
 
@@ -39,5 +40,6 @@ def get_config():
   # model
   model = config.model
   model.name = 'cunet'
+  model.ema_rate = 0.9999
 
   return config
