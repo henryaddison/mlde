@@ -1,4 +1,4 @@
-name: cuda-downscaling
+name: mv-mlde
 channels:
   - pytorch
   - conda-forge
@@ -368,4 +368,4 @@ dependencies:
       - mlde-utils==0.2.0a2
       - netcdf4==1.6.3
       - python-cmethods==1.0.1
-prefix: /home/henry/miniforge3/envs/cuda-downscaling
+prefix: /home/henry/miniforge3/envs/mv-mlde
