@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# calculate the number of parameters in a model
 
 import os
 from pathlib import Path
