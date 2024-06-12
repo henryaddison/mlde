@@ -36,7 +36,7 @@ def get_config():
   # data
   data = config.data
   data.centered = True
-  data.dataset_name = 'debug-sample'
+  data.dataset_name = 'debug-sample-mv'
 
   # model
   model = config.model
