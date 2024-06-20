@@ -52,20 +52,24 @@ FLAGS = flags.FLAGS
 
 EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
 
-def val_loss(config, eval_ds, eval_step_fn, state):
+def val_loss(config, eval_dl, eval_step_fn, state):
   val_set_loss = 0.0
-  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_ds:
-    # eval_cond_batch, eval_target_batch = next(iter(eval_ds))
+  # use a consistent generator for computing validation set loss
+  # so value is not down to vagaries of random choice of initial noise samples or schedules
+  g = torch.Generator(device=config.device)
+  g.manual_seed(42)
+  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_dl:
+    # eval_cond_batch, eval_target_batch = next(iter(eval_dl))
     eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
-    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch)
+    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch, generator=g)
 
     # Progress
     val_set_loss += eval_loss.item()
-    val_set_loss = val_set_loss/len(eval_ds)
+    val_set_loss = val_set_loss/len(eval_dl)
 
   return val_set_loss
 
@@ -112,7 +116,7 @@ def train(config, workdir):
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
     train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
-    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
+    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False, shuffle=False)
 
     # Initialize model.
     score_model = mutils.create_model(config)
