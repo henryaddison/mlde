@@ -52,10 +52,14 @@ FLAGS = flags.FLAGS
 
 EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
 
-def val_loss(config, eval_ds, eval_step_fn, state):
+def val_loss(config, eval_dl, eval_step_fn, state):
   val_set_loss = 0.0
-  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_ds:
-    # eval_cond_batch, eval_target_batch = next(iter(eval_ds))
+  # use a consistent generator for computing validation set loss
+  # so value is not down to vagaries of random choice of initial noise samples or schedules
+  g = torch.Generator(device=config.device)
+  g.manual_seed(42)
+  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_dl:
+    # eval_cond_batch, eval_target_batch = next(iter(eval_dl))
     eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
     # append any location-specific parameters
@@ -65,7 +69,7 @@ def val_loss(config, eval_ds, eval_step_fn, state):
 
     # Progress
     val_set_loss += eval_loss.item()
-    val_set_loss = val_set_loss/len(eval_ds)
+    val_set_loss = val_set_loss/len(eval_dl)
 
   return val_set_loss
 

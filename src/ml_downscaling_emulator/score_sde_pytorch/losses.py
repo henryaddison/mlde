@@ -74,7 +74,7 @@ def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_we
   """
   reduce_op = torch.mean if reduce_mean else lambda *args, **kwargs: 0.5 * torch.sum(*args, **kwargs)
 
-  def loss_fn(model, batch, cond):
+  def loss_fn(model, batch, cond, generator=None):
     """Compute the loss function.
 
     Args:
@@ -90,11 +90,9 @@ def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_we
     if train:
       t = torch.rand(batch.shape[0], device=batch.device) * (sde.T - eps) + eps
       z = torch.randn_like(batch)
-    if not train:
-      g = torch.Generator(device=batch.device)
-      g.manual_seed(42)
-      t = torch.rand(batch.shape[0], device=batch.device, generator=g) * (sde.T - eps) + eps
-      z = torch.randn_like(batch, generator=g)
+    else:
+      t = torch.rand(batch.shape[0], device=batch.device, generator=generator) * (sde.T - eps) + eps
+      z = torch.empty_like(batch).normal_(generator=generator)
     mean, std = sde.marginal_prob(batch, t)
     perturbed_data = mean + std[:, None, None, None] * z
     score = score_fn(perturbed_data, cond, t)
