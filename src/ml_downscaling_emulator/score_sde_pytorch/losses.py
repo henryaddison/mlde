@@ -91,7 +91,7 @@ def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_we
       t = torch.rand(batch.shape[0], device=batch.device) * (sde.T - eps) + eps
       z = torch.randn_like(batch)
     if not train:
-      g = torch.Generator()
+      g = torch.Generator(device=batch.device)
       g.manual_seed(42)
       t = torch.rand(batch.shape[0], device=batch.device, generator=g) * (sde.T - eps) + eps
       z = torch.randn_like(batch, generator=g)
