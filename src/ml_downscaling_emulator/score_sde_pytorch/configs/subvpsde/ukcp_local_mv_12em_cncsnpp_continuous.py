@@ -35,7 +35,7 @@ def get_config():
   # data
   data = config.data
   data.centered = True
-  data.dataset_name = 'bham_ccpm-4x_12em_mv_random-season'
+  data.dataset_name = 'bham64_ccpm-4x_12em_mv'
 
   # model
   model = config.model

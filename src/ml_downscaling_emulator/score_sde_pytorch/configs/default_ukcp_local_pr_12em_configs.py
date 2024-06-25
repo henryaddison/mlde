@@ -15,6 +15,6 @@ def get_default_configs():
 
   # data
   data = config.data
-  data.dataset_name = 'bham_gcmx-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season'
+  data.dataset_name = 'bham64_ccpm-4x_12em_psl-sphum4th-temp4th-vort4th_pr'
 
   return config
