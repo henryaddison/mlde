@@ -43,7 +43,10 @@ def update_config(config: config_dict.ConfigDict) -> config_dict.ConfigDict:
         logger.info(f"Changing {dataset_name} to {new_dataset_name}")
         config.data.dataset_name = new_dataset_name
 
-        if config.data.input_transform_dataset is not None:
+        if (
+            "input_transform_dataset" in config.data
+            and config.data.input_transform_dataset is not None
+        ):
             dataset_name = config.data.input_transform_dataset
             new_dataset_name = update_dataset_name(dataset_name)
             logger.info(f"Changing {dataset_name} to {new_dataset_name}")
