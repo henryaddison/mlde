@@ -36,7 +36,7 @@ def get_config():
   # data
   data = config.data
   data.centered = True
-  data.dataset_name = 'bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-historic'
+  data.dataset_name = 'bham64_ccpm-4x_1em_psl-sphum4th-temp4th-vort4th_pr-historic'
 
   # model
   model = config.model
