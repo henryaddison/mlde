@@ -28,12 +28,16 @@ def save_config(config: config_dict.ConfigDict, config_path: str) -> None:
 
 
 def update_dataset_name(dataset_name: str) -> str:
-    return (
-        dataset_name.replace("_eqvt", "_pr")
-        .replace("_random-season", "")
-        .replace("bham_gcmx", "bham64_ccpm")
-        .replace("bham_60km", "bham64_gcm")
-    )
+    # V1 migration
+    # return (
+    #     dataset_name.replace("_eqvt", "_pr")
+    #     .replace("_random-season", "")
+    #     .replace("bham_gcmx", "bham64_ccpm")
+    #     .replace("bham_60km", "bham64_gcm")
+    # )
+
+    # V2 migration
+    return dataset_name.replace("bham_ccpm", "bham64_ccpm")
 
 
 def update_config(config: config_dict.ConfigDict) -> config_dict.ConfigDict:
