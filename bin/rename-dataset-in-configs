@@ -66,4 +66,4 @@ config_paths = [
 for config_path in config_paths:
     config = load_config(config_path)
     config = update_config(config)
-    # save_config(config, config_path)
+    save_config(config, config_path)
