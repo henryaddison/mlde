@@ -74,7 +74,7 @@ def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_we
   """
   reduce_op = torch.mean if reduce_mean else lambda *args, **kwargs: 0.5 * torch.sum(*args, **kwargs)
 
-  def loss_fn(model, batch, cond):
+  def loss_fn(model, batch, cond, generator=None):
     """Compute the loss function.
 
     Args:
@@ -86,8 +86,13 @@ def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_we
       loss: A scalar that represents the average loss value across the mini-batch.
     """
     score_fn = mutils.get_score_fn(sde, model, train=train, continuous=continuous)
-    t = torch.rand(batch.shape[0], device=batch.device) * (sde.T - eps) + eps
-    z = torch.randn_like(batch)
+
+    if train:
+      t = torch.rand(batch.shape[0], device=batch.device) * (sde.T - eps) + eps
+      z = torch.randn_like(batch)
+    else:
+      t = torch.rand(batch.shape[0], device=batch.device, generator=generator) * (sde.T - eps) + eps
+      z = torch.empty_like(batch).normal_(generator=generator)
     mean, std = sde.marginal_prob(batch, t)
     perturbed_data = mean + std[:, None, None, None] * z
     score = score_fn(perturbed_data, cond, t)
@@ -179,7 +184,7 @@ def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, continuous=True
     else:
       raise ValueError(f"Discrete training for {sde.__class__.__name__} is not recommended.")
 
-  def step_fn(state, batch, cond):
+  def step_fn(state, batch, cond, generator=None):
     """Running one step of training or evaluation.
 
     This function will undergo `jax.lax.scan` so that multiple steps can be pmapped and jit-compiled together
@@ -190,6 +195,7 @@ def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, continuous=True
        EMA status, and number of optimization steps.
       batch: A mini-batch of training/evaluation data to model.
       cond: A mini-batch of conditioning inputs.
+      generator: An optional random number generator so can control the timesteps and initial noise samples used by loss function [ignored in train mode]
 
     Returns:
       loss: The average loss value of this state.
@@ -208,7 +214,7 @@ def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, continuous=True
         ema = state['ema']
         ema.store(model.parameters())
         ema.copy_to(model.parameters())
-        loss = loss_fn(model, batch, cond)
+        loss = loss_fn(model, batch, cond, generator=generator)
         ema.restore(model.parameters())
 
     return loss

@@ -52,20 +52,24 @@ FLAGS = flags.FLAGS
 
 EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
 
-def val_loss(config, eval_ds, eval_step_fn, state):
+def val_loss(config, eval_dl, eval_step_fn, state):
   val_set_loss = 0.0
-  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_ds:
-    # eval_cond_batch, eval_target_batch = next(iter(eval_ds))
+  # use a consistent generator for computing validation set loss
+  # so value is not down to vagaries of random choice of initial noise samples or schedules
+  g = torch.Generator(device=config.device)
+  g.manual_seed(42)
+  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_dl:
+    # eval_cond_batch, eval_target_batch = next(iter(eval_dl))
     eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
-    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch)
+    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch, generator=g)
 
     # Progress
     val_set_loss += eval_loss.item()
-    val_set_loss = val_set_loss/len(eval_ds)
+    val_set_loss = val_set_loss/len(eval_dl)
 
   return val_set_loss
 
@@ -112,7 +116,7 @@ def train(config, workdir):
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
     train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
-    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
+    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False, shuffle=False)
 
     # Initialize model.
     score_model = mutils.create_model(config)
@@ -167,6 +171,12 @@ def train(config, workdir):
     if config.training.random_crop_size > 0:
       random_crop = torchvision.transforms.RandomCrop(config.training.random_crop_size)
 
+    # log val loss before any training
+    if int(state['epoch']) == 0:
+      val_set_loss = val_loss(config, eval_dl, eval_step_fn, state)
+      epoch_metrics = {"epoch/val/loss": val_set_loss}
+      log_epoch(state['epoch'], epoch_metrics, wandb_run, writer)
+
     for epoch in range(initial_epoch, num_train_epochs + 1):
       state['epoch'] = epoch
       train_set_loss = 0.0
@@ -208,9 +218,7 @@ def train(config, workdir):
       val_set_loss = val_loss(config, eval_dl, eval_step_fn, state)
       epoch_metrics = {"epoch/train/loss": train_set_loss, "epoch/val/loss": val_set_loss}
 
-      logging.info("epoch: %d, val_loss: %.5e" % (state['epoch'], val_set_loss))
-      writer.add_scalar("epoch/val/loss", val_set_loss, global_step=state['epoch'])
-      log_epoch(state['epoch'], epoch_metrics, wandb_run,writer)
+      log_epoch(state['epoch'], epoch_metrics, wandb_run, writer)
 
       if (state['epoch'] != 0 and state['epoch'] % config.training.snapshot_freq == 0) or state['epoch'] == num_train_epochs:
         # Save the checkpoint.
