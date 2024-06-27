@@ -65,7 +65,7 @@ def val_loss(config, eval_dl, eval_step_fn, state):
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
-    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch)
+    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch, generator=g)
 
     # Progress
     val_set_loss += eval_loss.item()
