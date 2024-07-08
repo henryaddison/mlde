@@ -171,12 +171,6 @@ def train(config, workdir):
     if config.training.random_crop_size > 0:
       random_crop = torchvision.transforms.RandomCrop(config.training.random_crop_size)
 
-    # log val loss before any training
-    if int(state['epoch']) == 0:
-      val_set_loss = val_loss(config, eval_dl, eval_step_fn, state)
-      epoch_metrics = {"epoch/val/loss": val_set_loss}
-      log_epoch(state['epoch'], epoch_metrics, wandb_run, writer)
-
     for epoch in range(initial_epoch, num_train_epochs + 1):
       state['epoch'] = epoch
       train_set_loss = 0.0
