@@ -95,31 +95,34 @@ def get_sampling_fn(config, sde, shape, eps):
       trailing dimensions matching `shape`.
   """
 
-  sampler_name = config.sampling.method
-  # Probability flow ODE sampling with black-box ODE solvers
-  if sampler_name.lower() == 'ode':
-    sampling_fn = get_ode_sampler(sde=sde,
+  if config.deterministic:
+    sampling_fn = get_deterministic_sampler(shape, device=config.device)
+  else:
+    sampler_name = config.sampling.method
+    # Probability flow ODE sampling with black-box ODE solvers
+    if sampler_name.lower() == 'ode':
+      sampling_fn = get_ode_sampler(sde=sde,
+                                    shape=shape,
+                                    denoise=config.sampling.noise_removal,
+                                    eps=eps,
+                                    device=config.device)
+    # Predictor-Corrector sampling. Predictor-only and Corrector-only samplers are special cases.
+    elif sampler_name.lower() == 'pc':
+      predictor = get_predictor(config.sampling.predictor.lower())
+      corrector = get_corrector(config.sampling.corrector.lower())
+      sampling_fn = get_pc_sampler(sde=sde,
                                   shape=shape,
+                                  predictor=predictor,
+                                  corrector=corrector,
+                                  snr=config.sampling.snr,
+                                  n_steps=config.sampling.n_steps_each,
+                                  probability_flow=config.sampling.probability_flow,
+                                  continuous=config.training.continuous,
                                   denoise=config.sampling.noise_removal,
                                   eps=eps,
                                   device=config.device)
-  # Predictor-Corrector sampling. Predictor-only and Corrector-only samplers are special cases.
-  elif sampler_name.lower() == 'pc':
-    predictor = get_predictor(config.sampling.predictor.lower())
-    corrector = get_corrector(config.sampling.corrector.lower())
-    sampling_fn = get_pc_sampler(sde=sde,
-                                 shape=shape,
-                                 predictor=predictor,
-                                 corrector=corrector,
-                                 snr=config.sampling.snr,
-                                 n_steps=config.sampling.n_steps_each,
-                                 probability_flow=config.sampling.probability_flow,
-                                 continuous=config.training.continuous,
-                                 denoise=config.sampling.noise_removal,
-                                 eps=eps,
-                                 device=config.device)
-  else:
-    raise ValueError(f"Sampler name {sampler_name} unknown.")
+    else:
+      raise ValueError(f"Sampler name {sampler_name} unknown.")
 
   return sampling_fn
 
@@ -486,3 +489,32 @@ def get_ode_sampler(sde, shape,
       return x, nfe
 
   return ode_sampler
+
+
+#
+
+def get_deterministic_sampler(shape, device='cuda'):
+  """The 'sampler' for a deterministic model.
+
+    Args:
+      model: A deterministic model.
+      cond: A PyTorch tensor representing the conditioning inputs for this sample
+    Returns:
+      samples, number of function evaluations.
+    """
+  def deterministic_sampler(model, cond):
+    with torch.no_grad():
+      # Initial sample
+      # set batch size of output based on the conditioning input (since batches may vary in size)
+      output_shape = (cond.shape[0], *shape[1:])
+
+      device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+      x = torch.zeros(output_shape, device=device)
+      t = torch.zeros(output_shape[0], device=device)
+      # cond = cond.to(device)
+
+      samples = model(x, cond, t)
+
+    return samples, 1
+
+  return deterministic_sampler
