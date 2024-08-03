@@ -28,7 +28,7 @@ import os
 from codetiming import Timer
 import logging
 # Keep the import below for registering all model definitions
-from .models import cunet, cncsnpp
+from .models import det_cunet, cunet, cncsnpp
 from . import losses
 from .models.location_params import LocationParams
 from . import sampling
@@ -100,15 +100,15 @@ def train(config, workdir):
   tb_dir = os.path.join(workdir, "tensorboard")
   os.makedirs(tb_dir, exist_ok=True)
 
+  run_name = os.path.basename(workdir)
   run_config = dict(
         dataset=config.data.dataset_name,
         input_transform_key=config.data.input_transform_key,
         target_transform_key=config.data.target_transform_key,
         architecture=config.model.name,
         sde=config.training.sde,
-        name=os.path.basename(workdir),
+        name=run_name,
     )
-  run_name = os.path.basename(workdir)
 
   with track_run(
         EXPERIMENT_NAME, run_name, run_config, ["score_sde"], tb_dir

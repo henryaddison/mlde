@@ -36,6 +36,7 @@ from ml_downscaling_emulator.score_sde_pytorch.models import utils as mutils
 
 from ml_downscaling_emulator.score_sde_pytorch.models import cncsnpp  # noqa: F401
 from ml_downscaling_emulator.score_sde_pytorch.models import cunet  # noqa: F401
+from ml_downscaling_emulator.score_sde_pytorch.models import det_cunet  # noqa: F401
 
 from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
     layerspp,  # noqa: F401
