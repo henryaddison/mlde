@@ -276,8 +276,11 @@ def main(
         output_filepath = output_dirpath / f"predictions-{shortuuid.uuid()}.nc"
 
         logger.info(f"Saving samples to {output_filepath}...")
-        for varname in xr_samples.data_vars:
-            xr_samples[varname].encoding.update(zlib=True, complevel=5)
+        for varname in target_vars:
+            for prefix in ["pred_", "raw_pred_"]:
+                xr_samples[varname.replace("target_", prefix)].encoding.update(
+                    zlib=True, complevel=5
+                )
         xr_samples.to_netcdf(output_filepath)
 
 
