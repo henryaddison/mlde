@@ -97,29 +97,33 @@ def _init_state(config):
 
 
 def load_model(config, ckpt_filename):
-    if config.training.sde == "vesde":
-        sde = VESDE(
-            sigma_min=config.model.sigma_min,
-            sigma_max=config.model.sigma_max,
-            N=config.model.num_scales,
-        )
-        sampling_eps = 1e-5
-    elif config.training.sde == "vpsde":
-        sde = VPSDE(
-            beta_min=config.model.beta_min,
-            beta_max=config.model.beta_max,
-            N=config.model.num_scales,
-        )
-        sampling_eps = 1e-3
-    elif config.training.sde == "subvpsde":
-        sde = subVPSDE(
-            beta_min=config.model.beta_min,
-            beta_max=config.model.beta_max,
-            N=config.model.num_scales,
-        )
-        sampling_eps = 1e-3
+    if config.deterministic:
+        sde = None
+        sampling_eps = 0
     else:
-        raise RuntimeError(f"Unknown SDE {config.training.sde}")
+        if config.training.sde == "vesde":
+            sde = VESDE(
+                sigma_min=config.model.sigma_min,
+                sigma_max=config.model.sigma_max,
+                N=config.model.num_scales,
+            )
+            sampling_eps = 1e-5
+        elif config.training.sde == "vpsde":
+            sde = VPSDE(
+                beta_min=config.model.beta_min,
+                beta_max=config.model.beta_max,
+                N=config.model.num_scales,
+            )
+            sampling_eps = 1e-3
+        elif config.training.sde == "subvpsde":
+            sde = subVPSDE(
+                beta_min=config.model.beta_min,
+                beta_max=config.model.beta_max,
+                N=config.model.num_scales,
+            )
+            sampling_eps = 1e-3
+        else:
+            raise RuntimeError(f"Unknown SDE {config.training.sde}")
 
     # sigmas = mutils.get_sigmas(config)  # noqa: F841
     state = _init_state(config)

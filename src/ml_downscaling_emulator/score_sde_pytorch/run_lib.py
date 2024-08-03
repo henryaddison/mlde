@@ -139,17 +139,20 @@ def train(config, workdir):
     initial_epoch = int(state['epoch'])+1 # start from the epoch after the one currently reached
 
     # Setup SDEs
-    if config.training.sde.lower() == 'vpsde':
-      sde = sde_lib.VPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-      sampling_eps = 1e-3
-    elif config.training.sde.lower() == 'subvpsde':
-      sde = sde_lib.subVPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-      sampling_eps = 1e-3
-    elif config.training.sde.lower() == 'vesde':
-      sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
-      sampling_eps = 1e-5
+    if config.deterministic:
+      sde = None
     else:
-      raise NotImplementedError(f"SDE {config.training.sde} unknown.")
+      if config.training.sde.lower() == 'vpsde':
+        sde = sde_lib.VPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+        sampling_eps = 1e-3
+      elif config.training.sde.lower() == 'subvpsde':
+        sde = sde_lib.subVPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+        sampling_eps = 1e-3
+      elif config.training.sde.lower() == 'vesde':
+        sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
+        sampling_eps = 1e-5
+      else:
+        raise NotImplementedError(f"SDE {config.training.sde} unknown.")
 
     # Build one-step training and evaluation functions
     optimize_fn = losses.optimization_manager(config)
@@ -158,10 +161,12 @@ def train(config, workdir):
     likelihood_weighting = config.training.likelihood_weighting
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
-                                      likelihood_weighting=likelihood_weighting)
+                                      likelihood_weighting=likelihood_weighting,
+                                      deterministic=config.deterministic,)
     eval_step_fn = losses.get_step_fn(sde, train=False, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
-                                      likelihood_weighting=likelihood_weighting)
+                                      likelihood_weighting=likelihood_weighting,
+                                      deterministic=config.deterministic,)
 
     num_train_epochs = config.training.n_epochs
 
