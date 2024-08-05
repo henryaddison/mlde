@@ -1,0 +1,19 @@
+#!/bin/bash
+# Wrapper script around commands for interacting with a model to queue on LOTUS on JASMIN
+
+module load gcc
+
+source ~/.bashrc
+mamba activate mv-mlde
+
+set -euo pipefail
+
+cd /home/users/vf20964/code/mlde
+
+export DERIVED_DATA=/gws/nopw/j04/bris_climdyn/henrya/bp-backups/
+export KK_SLACK_WH_URL=https://hooks.slack.com
+export WANDB_EXPERIMENT_NAME="ml-downscaling-emulator"
+
+nvidia-smi
+
+$@
