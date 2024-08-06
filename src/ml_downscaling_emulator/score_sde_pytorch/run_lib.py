@@ -124,7 +124,8 @@ def train(config, workdir):
     location_params = LocationParams(config.model.loc_spec_channels, config.data.image_size)
     location_params = location_params.to(config.device)
     location_params = torch.nn.DataParallel(location_params)
-    ema = ExponentialMovingAverage(itertools.chain(score_model.parameters(), location_params.parameters()), decay=config.model.ema_rate)
+    ema = ExponentialMovingAverage(itertools.chain(score_model.parameters(), location_params.parameters()), decay=config.model.ema_rate, disable_update=config.model.ema_disabled)
+
     optimizer = losses.get_optimizer(config, itertools.chain(score_model.parameters(), location_params.parameters()))
     state = dict(optimizer=optimizer, model=score_model, location_params=location_params, ema=ema, step=0, epoch=0)
 
