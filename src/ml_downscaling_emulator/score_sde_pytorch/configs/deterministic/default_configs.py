@@ -71,6 +71,7 @@ def get_default_configs():
   model.loc_spec_channels = 0
   model.num_scales = 1
   model.ema_rate = 0.9999
+  model.ema_disabled = False
   model.dropout = 0.1
   model.embedding_type = 'fourier'
 
