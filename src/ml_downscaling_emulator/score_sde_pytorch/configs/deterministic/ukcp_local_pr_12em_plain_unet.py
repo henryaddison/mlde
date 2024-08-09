@@ -43,7 +43,7 @@ def get_config():
   # model
   model = config.model
   model.name = 'det_cunet'
-  model.ema_disabled = True
+  model.ema_rate = 1 # basically disables EMA
 
   # optimizer
   optim = config.optim
