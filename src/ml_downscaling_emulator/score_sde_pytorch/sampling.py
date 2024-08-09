@@ -95,7 +95,7 @@ def get_sampling_fn(config, sde, shape, eps):
       trailing dimensions matching `shape`.
   """
 
-  if config.deterministic:
+  if "deterministic" in config and config.deterministic:
     sampling_fn = get_deterministic_sampler(shape, device=config.device)
   else:
     sampler_name = config.sampling.method

@@ -140,7 +140,8 @@ def train(config, workdir):
     initial_epoch = int(state['epoch'])+1 # start from the epoch after the one currently reached
 
     # Setup SDEs
-    if config.deterministic:
+    deterministic = "deterministic" in config and config.deterministic
+    if deterministic:
       sde = None
     else:
       if config.training.sde.lower() == 'vpsde':
@@ -163,11 +164,11 @@ def train(config, workdir):
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
                                       likelihood_weighting=likelihood_weighting,
-                                      deterministic=config.deterministic,)
+                                      deterministic=deterministic,)
     eval_step_fn = losses.get_step_fn(sde, train=False, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
                                       likelihood_weighting=likelihood_weighting,
-                                      deterministic=config.deterministic,)
+                                      deterministic=deterministic,)
 
     num_train_epochs = config.training.n_epochs
 
