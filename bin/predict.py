@@ -98,7 +98,8 @@ def _init_state(config):
 
 
 def load_model(config, ckpt_filename):
-    if config.deterministic:
+    deterministic = "deterministic" in config and config.deterministic
+    if deterministic:
         sde = None
         sampling_eps = 0
     else:
