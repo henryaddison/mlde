@@ -16,9 +16,7 @@ def get_config():
     evaluate.batch_size = 64
 
     config.data = data = ml_collections.ConfigDict()
-    data.dataset_name = (
-        "bham_gcmx-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season"
-    )
+    data.dataset_name = "bham64_ccpm-4x_12em_psl-sphum4th-temp4th-vort4th_pr"
     data.input_transform_key = "stan"
     data.target_transform_key = "sqrturrecen"
     data.input_transform_dataset = None
