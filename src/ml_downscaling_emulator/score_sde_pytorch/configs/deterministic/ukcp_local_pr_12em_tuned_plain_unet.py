@@ -43,7 +43,6 @@ def get_config():
   # model
   model = config.model
   model.name = 'det_cunet'
-  model.ema_disabled = False
 
   # optimizer
   optim = config.optim

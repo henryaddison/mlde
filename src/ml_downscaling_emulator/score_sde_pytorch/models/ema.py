@@ -12,7 +12,7 @@ class ExponentialMovingAverage:
   Maintains (exponential) moving average of a set of parameters.
   """
 
-  def __init__(self, parameters, decay, use_num_updates=True, disable_update=False):
+  def __init__(self, parameters, decay, use_num_updates=True):
     """
     Args:
       parameters: Iterable of `torch.nn.Parameter`; usually the result of
@@ -28,7 +28,6 @@ class ExponentialMovingAverage:
     self.shadow_params = [p.clone().detach()
                           for p in parameters if p.requires_grad]
     self.collected_params = []
-    self.disable_update = disable_update
 
   def update(self, parameters):
     """
@@ -41,7 +40,10 @@ class ExponentialMovingAverage:
       parameters: Iterable of `torch.nn.Parameter`; usually the same set of
         parameters used to initialize this object.
     """
-    if not self.disable_update:
+    if self.decay == 1:
+      # complete decay so just maintain a copy of the parameters
+      self.shadow_params = [p.clone().detach() for p in parameters if p.requires_grad]
+    else:
       decay = self.decay
       if self.num_updates is not None:
         self.num_updates += 1
@@ -51,9 +53,7 @@ class ExponentialMovingAverage:
         parameters = [p for p in parameters if p.requires_grad]
         for s_param, param in zip(self.shadow_params, parameters):
           s_param.sub_(one_minus_decay * (s_param - param))
-    else:
-      # if disabled then just maintain a copy of the parameters
-      self.shadow_params = [p.clone().detach() for p in parameters if p.requires_grad]
+
 
   def copy_to(self, parameters):
     """
