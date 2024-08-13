@@ -22,6 +22,7 @@
 
 import torch
 import torch.optim as optim
+import torch.nn.functional as F
 import numpy as np
 from .models import utils as mutils
 from .sde_lib import VESDE, VPSDE
@@ -55,6 +56,28 @@ def optimization_manager(config):
 
   return optimize_fn
 
+
+def get_deterministic_loss_fn(train, reduce_mean=True):
+  def loss_fn(model, batch, cond, generator=None):
+    """Compute the loss function for a deterministic run.
+
+    Args:
+      model: A score model.
+      batch: A mini-batch of training/evaluation data to model.
+      cond: A mini-batch of conditioning inputs.
+      generator: An optional random number generator so can control the timesteps and initial noise samples used by loss function [ignored in train mode]
+
+    Returns:
+      loss: A scalar that represents the average loss value across the mini-batch.
+    """
+    # for deterministic model, do not use the time or target inputs - set to 0 always
+    x = torch.zeros_like(batch)
+    t = torch.zeros(batch.shape[0], device=batch.device)
+    pred = model(x, cond, t)
+    loss = F.mse_loss(pred, batch, reduction="mean")
+    return loss
+
+  return loss_fn
 
 def get_sde_loss_fn(sde, train, reduce_mean=True, continuous=True, likelihood_weighting=True, eps=1e-5):
   """Create a loss function for training with arbirary SDEs.
@@ -158,7 +181,7 @@ def get_ddpm_loss_fn(vpsde, train, reduce_mean=True):
   return loss_fn
 
 
-def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, continuous=True, likelihood_weighting=False):
+def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, continuous=True, likelihood_weighting=False, deterministic=False):
   """Create a one-step training/evaluation function.
 
   Args:
@@ -168,21 +191,25 @@ def get_step_fn(sde, train, optimize_fn=None, reduce_mean=False, continuous=True
     continuous: `True` indicates that the model is defined to take continuous time steps.
     likelihood_weighting: If `True`, weight the mixture of score matching losses according to
       https://arxiv.org/abs/2101.09258; otherwise use the weighting recommended by our paper.
+    deterministic: If true, use deterministic mode loss, else use diffusion losses.
 
   Returns:
     A one-step function for training or evaluation.
   """
-  if continuous:
-    loss_fn = get_sde_loss_fn(sde, train, reduce_mean=reduce_mean,
-                              continuous=True, likelihood_weighting=likelihood_weighting)
+  if deterministic:
+    loss_fn = get_deterministic_loss_fn(train, reduce_mean=reduce_mean)
   else:
-    assert not likelihood_weighting, "Likelihood weighting is not supported for original SMLD/DDPM training."
-    if isinstance(sde, VESDE):
-      loss_fn = get_smld_loss_fn(sde, train, reduce_mean=reduce_mean)
-    elif isinstance(sde, VPSDE):
-      loss_fn = get_ddpm_loss_fn(sde, train, reduce_mean=reduce_mean)
+    if continuous:
+      loss_fn = get_sde_loss_fn(sde, train, reduce_mean=reduce_mean,
+                              continuous=True, likelihood_weighting=likelihood_weighting)
     else:
-      raise ValueError(f"Discrete training for {sde.__class__.__name__} is not recommended.")
+      assert not likelihood_weighting, "Likelihood weighting is not supported for original SMLD/DDPM training."
+      if isinstance(sde, VESDE):
+        loss_fn = get_smld_loss_fn(sde, train, reduce_mean=reduce_mean)
+      elif isinstance(sde, VPSDE):
+        loss_fn = get_ddpm_loss_fn(sde, train, reduce_mean=reduce_mean)
+      else:
+        raise ValueError(f"Discrete training for {sde.__class__.__name__} is not recommended.")
 
   def step_fn(state, batch, cond, generator=None):
     """Running one step of training or evaluation.

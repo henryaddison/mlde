@@ -28,7 +28,7 @@ import os
 from codetiming import Timer
 import logging
 # Keep the import below for registering all model definitions
-from .models import cunet, cncsnpp
+from .models import det_cunet, cunet, cncsnpp
 from . import losses
 from .models.location_params import LocationParams
 from . import sampling
@@ -100,15 +100,15 @@ def train(config, workdir):
   tb_dir = os.path.join(workdir, "tensorboard")
   os.makedirs(tb_dir, exist_ok=True)
 
+  run_name = os.path.basename(workdir)
   run_config = dict(
         dataset=config.data.dataset_name,
         input_transform_key=config.data.input_transform_key,
         target_transform_key=config.data.target_transform_key,
         architecture=config.model.name,
         sde=config.training.sde,
-        name=os.path.basename(workdir),
+        name=run_name,
     )
-  run_name = os.path.basename(workdir)
 
   with track_run(
         EXPERIMENT_NAME, run_name, run_config, ["score_sde"], tb_dir
@@ -125,6 +125,7 @@ def train(config, workdir):
     location_params = location_params.to(config.device)
     location_params = torch.nn.DataParallel(location_params)
     ema = ExponentialMovingAverage(itertools.chain(score_model.parameters(), location_params.parameters()), decay=config.model.ema_rate)
+
     optimizer = losses.get_optimizer(config, itertools.chain(score_model.parameters(), location_params.parameters()))
     state = dict(optimizer=optimizer, model=score_model, location_params=location_params, ema=ema, step=0, epoch=0)
 
@@ -139,17 +140,21 @@ def train(config, workdir):
     initial_epoch = int(state['epoch'])+1 # start from the epoch after the one currently reached
 
     # Setup SDEs
-    if config.training.sde.lower() == 'vpsde':
-      sde = sde_lib.VPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-      sampling_eps = 1e-3
-    elif config.training.sde.lower() == 'subvpsde':
-      sde = sde_lib.subVPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-      sampling_eps = 1e-3
-    elif config.training.sde.lower() == 'vesde':
-      sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
-      sampling_eps = 1e-5
+    deterministic = "deterministic" in config and config.deterministic
+    if deterministic:
+      sde = None
     else:
-      raise NotImplementedError(f"SDE {config.training.sde} unknown.")
+      if config.training.sde.lower() == 'vpsde':
+        sde = sde_lib.VPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+        sampling_eps = 1e-3
+      elif config.training.sde.lower() == 'subvpsde':
+        sde = sde_lib.subVPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+        sampling_eps = 1e-3
+      elif config.training.sde.lower() == 'vesde':
+        sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
+        sampling_eps = 1e-5
+      else:
+        raise NotImplementedError(f"SDE {config.training.sde} unknown.")
 
     # Build one-step training and evaluation functions
     optimize_fn = losses.optimization_manager(config)
@@ -158,10 +163,12 @@ def train(config, workdir):
     likelihood_weighting = config.training.likelihood_weighting
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
-                                      likelihood_weighting=likelihood_weighting)
+                                      likelihood_weighting=likelihood_weighting,
+                                      deterministic=deterministic,)
     eval_step_fn = losses.get_step_fn(sde, train=False, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
-                                      likelihood_weighting=likelihood_weighting)
+                                      likelihood_weighting=likelihood_weighting,
+                                      deterministic=deterministic,)
 
     num_train_epochs = config.training.n_epochs
 
