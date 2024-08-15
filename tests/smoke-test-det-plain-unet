@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # config_name="ukcp_local_pr_debug"
-config_name="ukcp_local_pr_pure_deterministic_debug"
+config_name="ukcp_local_pr_plain_unet_debug"
 
 workdir="output/test/deterministic/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/score_sde_pytorch/configs/deterministic/${config_name}.py"
