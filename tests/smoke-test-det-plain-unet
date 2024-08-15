@@ -8,10 +8,10 @@ config_name="ukcp_local_pr_plain_unet_debug"
 workdir="output/test/deterministic/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/score_sde_pytorch/configs/deterministic/${config_name}.py"
 
-loc_spec_channels=0
+loc_spec_channels=2
 
 rm -rf ${workdir}
-WANDB_EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train  --config.model.loc_spec_channels=${loc_spec_channels}
+WANDB_EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.model.loc_spec_channels=${loc_spec_channels}
 
 num_samples=2
 eval_batch_size=32
