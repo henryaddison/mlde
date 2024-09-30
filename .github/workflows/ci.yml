@@ -12,7 +12,7 @@ jobs:
     - name: Clone repo
       uses: actions/checkout@v4
     - name: setup-micromamba
-      uses: mamba-org/setup-micromamba@v1.4.1
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: environment.lock.yml
         init-shell: bash
