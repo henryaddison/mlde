@@ -16,7 +16,7 @@ jobs:
       with:
         environment-file: environment.lock.yml
         init-shell: bash
-        cache-environment: true
+        # cache-environment: true
         post-cleanup: 'all'
     - name: Install package
       run: |
