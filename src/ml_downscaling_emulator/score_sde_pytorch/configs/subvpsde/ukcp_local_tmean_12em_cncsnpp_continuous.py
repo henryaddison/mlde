@@ -65,6 +65,6 @@ def get_config():
 
   # data
   data = config.data
-  data.target_transform_key = 'stanmmrecen'
+  data.target_transform_key = 'mm;recen'
 
   return config

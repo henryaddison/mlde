@@ -37,6 +37,7 @@ def get_config():
   data = config.data
   data.centered = True
   data.dataset_name = 'debug-sample-mv'
+  data.target_transform_overrides.target_tmean150cm = "mm;recen"
 
   # model
   model = config.model

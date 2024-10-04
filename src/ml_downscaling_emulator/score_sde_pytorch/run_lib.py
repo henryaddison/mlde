@@ -22,6 +22,7 @@
 # pylint: skip-file
 """Training for score-based generative models. """
 
+from collections import defaultdict
 import itertools
 import os
 
@@ -100,11 +101,13 @@ def train(config, workdir):
   tb_dir = os.path.join(workdir, "tensorboard")
   os.makedirs(tb_dir, exist_ok=True)
 
+  target_xfm_keys = defaultdict(lambda: config.data.target_transform_key) | dict(config.data.target_transform_overrides)
+
   run_name = os.path.basename(workdir)
   run_config = dict(
         dataset=config.data.dataset_name,
         input_transform_key=config.data.input_transform_key,
-        target_transform_key=config.data.target_transform_key,
+        target_transform_keys=target_xfm_keys,
         architecture=config.model.name,
         sde=config.training.sde,
         name=run_name,
@@ -115,8 +118,8 @@ def train(config, workdir):
     ) as (wandb_run, writer):
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
-    train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
-    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False, shuffle=False)
+    train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, target_xfm_keys, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
+    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, target_xfm_keys, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False, shuffle=False)
 
     # Initialize model.
     score_model = mutils.create_model(config)

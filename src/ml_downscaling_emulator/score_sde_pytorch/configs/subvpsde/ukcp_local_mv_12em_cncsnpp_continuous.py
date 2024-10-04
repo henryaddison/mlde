@@ -36,6 +36,7 @@ def get_config():
   data = config.data
   data.centered = True
   data.dataset_name = 'bham64_ccpm-4x_12em_mv'
+  data.target_transform_overrides.target_tmean150cm = "mm;recen"
 
   # model
   model = config.model

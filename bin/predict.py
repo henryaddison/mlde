@@ -1,5 +1,6 @@
 """Generate samples"""
 
+from collections import defaultdict
 import itertools
 import os
 from pathlib import Path
@@ -234,6 +235,10 @@ def main(
             config.data.input_transform_dataset = input_transform_dataset
         else:
             config.data.input_transform_dataset = dataset
+
+        if "target_transform_overrides" not in config.data:
+            config.data.target_transform_overrides = config_dict.ConfigDict()
+
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
 
@@ -253,13 +258,17 @@ def main(
 
     transform_dir = os.path.join(workdir, "transforms")
 
+    target_xfm_keys = defaultdict(lambda: config.data.target_transform_key) | dict(
+        config.data.target_transform_overrides
+    )
+
     # Data
     eval_dl, _, target_transform = get_dataloader(
         dataset,
         config.data.dataset_name,
         config.data.input_transform_dataset,
         config.data.input_transform_key,
-        config.data.target_transform_key,
+        target_xfm_keys,
         transform_dir,
         split=split,
         ensemble_members=[ensemble_member],

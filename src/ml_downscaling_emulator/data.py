@@ -109,7 +109,7 @@ def get_dataloader(
     model_src_dataset_name,
     input_transform_dataset_name,
     input_transform_key,
-    target_transform_key,
+    target_transform_keys,
     transform_dir,
     batch_size,
     split,
@@ -126,7 +126,7 @@ def get_dataloader(
       input_transform_dataset_name: Name of dataset to use for fitting input transform (may be the same as active_dataset_name or model_src_dataset_name)
       transform_dir: Path to where transforms should be stored
       input_transform_key: Name of input transform pipeline to use
-      target_transform_key: Name of target transform pipeline to use
+      target_transform_keys: Mapping from target variable name to target transform pipeline to use
       batch_size: Size of batch to use for DataLoaders
       split: Split of the active dataset to load
       evaluation: If `True`, fix number of epochs to 1.
@@ -139,7 +139,7 @@ def get_dataloader(
         model_src_dataset_name,
         input_transform_dataset_name,
         input_transform_key,
-        target_transform_key,
+        target_transform_keys,
         transform_dir,
         split,
         ensemble_members,

@@ -49,6 +49,8 @@ def get_default_configs():
   data.input_transform_dataset = None
   data.input_transform_key = "stan"
   data.target_transform_key = "sqrturrecen"
+  data.target_transform_overrides = ml_collections.ConfigDict()
+
   data.time_inputs = False
 
   # model
