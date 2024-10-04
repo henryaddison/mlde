@@ -22,13 +22,14 @@
 # pylint: skip-file
 """Training for score-based generative models. """
 
+from collections import defaultdict
 import itertools
 import os
 
 from codetiming import Timer
 import logging
 # Keep the import below for registering all model definitions
-from .models import cunet, cncsnpp
+from .models import det_cunet, cunet, cncsnpp
 from . import losses
 from .models.location_params import LocationParams
 from . import sampling
@@ -52,20 +53,24 @@ FLAGS = flags.FLAGS
 
 EXPERIMENT_NAME = os.getenv("WANDB_EXPERIMENT_NAME")
 
-def val_loss(config, eval_ds, eval_step_fn, state):
+def val_loss(config, eval_dl, eval_step_fn, state):
   val_set_loss = 0.0
-  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_ds:
-    # eval_cond_batch, eval_target_batch = next(iter(eval_ds))
+  # use a consistent generator for computing validation set loss
+  # so value is not down to vagaries of random choice of initial noise samples or schedules
+  g = torch.Generator(device=config.device)
+  g.manual_seed(42)
+  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_dl:
+    # eval_cond_batch, eval_target_batch = next(iter(eval_dl))
     eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
-    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch)
+    eval_loss = eval_step_fn(state, eval_target_batch, eval_cond_batch, generator=g)
 
     # Progress
     val_set_loss += eval_loss.item()
-    val_set_loss = val_set_loss/len(eval_ds)
+    val_set_loss = val_set_loss/len(eval_dl)
 
   return val_set_loss
 
@@ -96,23 +101,25 @@ def train(config, workdir):
   tb_dir = os.path.join(workdir, "tensorboard")
   os.makedirs(tb_dir, exist_ok=True)
 
+  target_xfm_keys = defaultdict(lambda: config.data.target_transform_key) | dict(config.data.target_transform_overrides)
+
+  run_name = os.path.basename(workdir)
   run_config = dict(
         dataset=config.data.dataset_name,
         input_transform_key=config.data.input_transform_key,
-        target_transform_key=config.data.target_transform_key,
+        target_transform_keys=target_xfm_keys,
         architecture=config.model.name,
         sde=config.training.sde,
-        name=os.path.basename(workdir),
+        name=run_name,
     )
-  run_name = os.path.basename(workdir)
 
   with track_run(
         EXPERIMENT_NAME, run_name, run_config, ["score_sde"], tb_dir
     ) as (wandb_run, writer):
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
-    train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
-    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, config.data.target_transform_key, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
+    train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, target_xfm_keys, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
+    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, target_xfm_keys, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False, shuffle=False)
 
     # Initialize model.
     score_model = mutils.create_model(config)
@@ -121,6 +128,7 @@ def train(config, workdir):
     location_params = location_params.to(config.device)
     location_params = torch.nn.DataParallel(location_params)
     ema = ExponentialMovingAverage(itertools.chain(score_model.parameters(), location_params.parameters()), decay=config.model.ema_rate)
+
     optimizer = losses.get_optimizer(config, itertools.chain(score_model.parameters(), location_params.parameters()))
     state = dict(optimizer=optimizer, model=score_model, location_params=location_params, ema=ema, step=0, epoch=0)
 
@@ -135,17 +143,21 @@ def train(config, workdir):
     initial_epoch = int(state['epoch'])+1 # start from the epoch after the one currently reached
 
     # Setup SDEs
-    if config.training.sde.lower() == 'vpsde':
-      sde = sde_lib.VPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-      sampling_eps = 1e-3
-    elif config.training.sde.lower() == 'subvpsde':
-      sde = sde_lib.subVPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
-      sampling_eps = 1e-3
-    elif config.training.sde.lower() == 'vesde':
-      sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
-      sampling_eps = 1e-5
+    deterministic = "deterministic" in config and config.deterministic
+    if deterministic:
+      sde = None
     else:
-      raise NotImplementedError(f"SDE {config.training.sde} unknown.")
+      if config.training.sde.lower() == 'vpsde':
+        sde = sde_lib.VPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+        sampling_eps = 1e-3
+      elif config.training.sde.lower() == 'subvpsde':
+        sde = sde_lib.subVPSDE(beta_min=config.model.beta_min, beta_max=config.model.beta_max, N=config.model.num_scales)
+        sampling_eps = 1e-3
+      elif config.training.sde.lower() == 'vesde':
+        sde = sde_lib.VESDE(sigma_min=config.model.sigma_min, sigma_max=config.model.sigma_max, N=config.model.num_scales)
+        sampling_eps = 1e-5
+      else:
+        raise NotImplementedError(f"SDE {config.training.sde} unknown.")
 
     # Build one-step training and evaluation functions
     optimize_fn = losses.optimization_manager(config)
@@ -154,10 +166,12 @@ def train(config, workdir):
     likelihood_weighting = config.training.likelihood_weighting
     train_step_fn = losses.get_step_fn(sde, train=True, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
-                                      likelihood_weighting=likelihood_weighting)
+                                      likelihood_weighting=likelihood_weighting,
+                                      deterministic=deterministic,)
     eval_step_fn = losses.get_step_fn(sde, train=False, optimize_fn=optimize_fn,
                                       reduce_mean=reduce_mean, continuous=continuous,
-                                      likelihood_weighting=likelihood_weighting)
+                                      likelihood_weighting=likelihood_weighting,
+                                      deterministic=deterministic,)
 
     num_train_epochs = config.training.n_epochs
 
@@ -208,9 +222,7 @@ def train(config, workdir):
       val_set_loss = val_loss(config, eval_dl, eval_step_fn, state)
       epoch_metrics = {"epoch/train/loss": train_set_loss, "epoch/val/loss": val_set_loss}
 
-      logging.info("epoch: %d, val_loss: %.5e" % (state['epoch'], val_set_loss))
-      writer.add_scalar("epoch/val/loss", val_set_loss, global_step=state['epoch'])
-      log_epoch(state['epoch'], epoch_metrics, wandb_run,writer)
+      log_epoch(state['epoch'], epoch_metrics, wandb_run, writer)
 
       if (state['epoch'] != 0 and state['epoch'] % config.training.snapshot_freq == 0) or state['epoch'] == num_train_epochs:
         # Save the checkpoint.
