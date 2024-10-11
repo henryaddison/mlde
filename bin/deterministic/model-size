@@ -13,6 +13,7 @@ import yaml
 
 
 from ml_downscaling_emulator.deterministic.utils import create_model
+from ml_downscaling_emulator.utils import model_size, param_count
 
 
 logger = logging.getLogger()
@@ -49,9 +50,13 @@ def main(
     config_path = os.path.join(workdir, "config.yml")
     config = load_config(config_path)
     model = load_model(config)["model"]
-    num_score_model_parameters = sum(p.numel() for p in model.parameters())
+    num_score_model_parameters = param_count(model)
 
     typer.echo(f"Model has {num_score_model_parameters} parameters")
+
+    size_all_mb = model_size(model)
+
+    typer.echo("model size: {:.3f}MB".format(size_all_mb))
 
 
 if __name__ == "__main__":

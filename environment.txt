@@ -6,6 +6,7 @@ black==22.10.0
 bottleneck
 cdo
 codetiming
+nvidia/label/cuda-11.3.1::cuda
 cudatoolkit=11.3.1
 dask
 filelock

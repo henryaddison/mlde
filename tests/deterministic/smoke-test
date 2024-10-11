@@ -4,8 +4,8 @@ set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-cpm_dataset="bham_gcmx-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-historic"
-gcm_dataset="bham_60km-4x_1em_psl-sphum4th-temp4th-vort4th_eqvt_random-season-historic"
+cpm_dataset="bham64_ccpm-4x_12em_psl-sphum4th-temp4th-vort4th_pr-historic"
+gcm_dataset="bham64_gcm-4x_12em_psl-sphum4th-temp4th-vort4th_pr-historic"
 workdir="output/test/unet/test-run"
 
 config_path="src/ml_downscaling_emulator/deterministic/configs/ukcp_local_12em_pr_unet.py"
