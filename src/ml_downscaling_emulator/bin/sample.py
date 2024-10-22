@@ -72,14 +72,18 @@ def _sample_id(variable: str, eval_ds: xr.Dataset) -> xr.Dataset:
 @app.command()
 @Timer(name="sample", text="{name}: {minutes:.1f} minutes", logger=logging.info)
 @slack_sender(webhook_url=os.getenv("KK_SLACK_WH_URL"), channel="general")
-def sample_id(
+def as_input(
     workdir: Path,
     dataset: str = typer.Option(...),
     variable: str = "pr",
     split: str = "val",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
 ):
+    """
+    Use a given variable from the dataset to create a file of prediction samples.
 
+    Commonly used to create samples based on an already processed variable like using a bilinearly interpolated coarse resolution variable as the predicted "high-resolution" value directly.
+    """
     output_dirpath = samples_path(
         workdir=workdir,
         checkpoint=f"epoch-0",
