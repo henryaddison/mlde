@@ -61,6 +61,7 @@ def get_default_configs():
   data.centered = True
   data.input_transform_key = "stan"
   data.target_transform_key = "sqrturrecen"
+  data.target_transform_overrides = ml_collections.ConfigDict()
 
   # model
   config.model = model = ml_collections.ConfigDict()
