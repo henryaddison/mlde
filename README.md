@@ -17,6 +17,21 @@ Diffusion model implementation forked from PyTorch implementation for the paper 
 
 Any datasets are assumed to be found in `${DERIVED_DATA}/moose/nc-datasets/{dataset_name}/`. In particular, the config key config.data.dataset_name is the name of the dataset to use to train the model.
 
+### Updating conda environment
+
+To add new packages or update their version, it is recommended to use the `environment.txt` file (for conda packages) and `requirements.txt` file (for pip packages) then run:
+```sh
+conda env install -f environment.txt
+pip install -e . # this will implicitly use requirement.txt
+conda env export -f environment.lock.yml
+```
+then commit any changes (though make sure not to include mlde-notebooks package in the lock file since that is not distributed via PyPI).
+
+To sync environment with the lock file use:
+```sh
+conda env update -f environment.lock.yml --prune
+```
+
 ## Diffusion Model Usage
 
 ### Data
