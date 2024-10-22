@@ -1,0 +1,24 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+
+sde="subvpsde"
+config_name="ukcp_local_mv_debug"
+dataset="debug-sample-mv"
+
+workdir="output/test/${sde}/${config_name}/test-run"
+config_path="src/ml_downscaling_emulator/configs/${sde}/${config_name}.py"
+
+loc_spec_channels=2
+train_batch_size=2
+epoch=2
+
+rm -rf ${workdir}
+WANDB_EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.data.dataset_name=${dataset} --config.training.snapshot_freq=5 --config.training.eval_freq=100 --config.training.log_freq=50 --config.training.n_epochs=${epoch} --config.model.loc_spec_channels=${loc_spec_channels} --config.training.batch_size=${train_batch_size} --config.data.input_transform_key=stan --config.data.target_transform_key=sqrturrecen --config.data.time_inputs=True --config.model.num_scales=10
+
+num_samples=2
+eval_batch_size=32
+checkpoint="epoch_${epoch}"
+
+rm -rf "${workdir}/samples/${checkpoint}/${dataset}"
+python bin/predict.py ${workdir} --dataset ${dataset} --checkpoint ${checkpoint} --batch-size ${eval_batch_size} --num-samples ${num_samples} --ensemble-member 01

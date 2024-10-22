@@ -14,7 +14,7 @@ def train_cmd(sde, workdir, config, config_overrides=list):
     train_basecmd = ["python", f"bin/main.py"]
 
     train_opts = {
-        "--config": f"src/ml_downscaling_emulator/score_sde_pytorch/configs/{sde}/{config}.py",
+        "--config": f"src/ml_downscaling_emulator/configs/{sde}/{config}.py",
         "--workdir": workdir,
         "--mode": "train",
     }
@@ -35,7 +35,7 @@ def queue_cmd(duration, memory):
         "-m": str(memory),
         "-q": "cnu,gpu",
         "-t": str(duration),
-        "--condaenv": "cuda-downscaling",
+        "--condaenv": "mlde",
     }
 
     return queue_basecmd + [arg for item in queue_opts.items() for arg in item]

@@ -1,6 +1,7 @@
-name: cuda-downscaling
+name: mlde
 channels:
   - pytorch
+  - nvidia/label/cuda-11.3.1
   - conda-forge
   - nodefaults
 dependencies:
@@ -41,12 +42,12 @@ dependencies:
   - brotlipy=0.7.0=py39hb9d737c_1005
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2024.2.2=hbcca054_0
+  - ca-certificates=2024.8.30=hbcca054_0
   - cachetools=5.2.0=pyhd8ed1ab_0
   - cairo=1.16.0=ha61ee94_1014
   - cartopy=0.21.1=py39h6e7ad6e_0
   - cdo=2.1.0=h15029e1_0
-  - certifi=2024.2.2=pyhd8ed1ab_0
+  - certifi=2024.8.30=pyhd8ed1ab_0
   - cf-units=3.1.1=py39h2ae25f5_2
   - cffi=1.15.1=py39he91dace_3
   - cfgv=3.3.1=pyhd8ed1ab_0
@@ -61,6 +62,32 @@ dependencies:
   - contextlib2=21.6.0=pyhd8ed1ab_0
   - contourpy=1.0.6=py39hf939315_0
   - cryptography=38.0.4=py39h3ccb8fc_0
+  - cuda=11.3.1=h712c49d_0
+  - cuda-command-line-tools=11.3.1=h712c49d_0
+  - cuda-compiler=11.3.1=h712c49d_0
+  - cuda-cudart=11.3.109=hfb95d0c_0
+  - cuda-cuobjdump=11.3.122=hbf6ec6b_0
+  - cuda-cupti=11.3.111=h12ad217_0
+  - cuda-cuxxfilt=11.3.122=h4dc11a3_0
+  - cuda-gdb=11.3.109=h33b7820_0
+  - cuda-libraries=11.3.1=h712c49d_0
+  - cuda-libraries-dev=11.3.1=h712c49d_0
+  - cuda-memcheck=11.3.109=hf5cb439_0
+  - cuda-nvcc=11.3.122=h4814707_0
+  - cuda-nvdisasm=11.3.122=ha26faa6_0
+  - cuda-nvml-dev=11.3.58=hc25e488_0
+  - cuda-nvprof=11.3.111=h95a27d4_0
+  - cuda-nvprune=11.3.122=hb3346b8_0
+  - cuda-nvrtc=11.3.122=h1aa17d8_0
+  - cuda-nvtx=11.3.109=h4ec7630_0
+  - cuda-nvvp=11.3.111=h4c4416a_0
+  - cuda-runtime=11.3.1=h712c49d_0
+  - cuda-samples=11.3.58=h6d5b628_0
+  - cuda-sanitizer-api=11.3.111=h2446cfc_0
+  - cuda-thrust=11.3.109=he8b717c_0
+  - cuda-toolkit=11.3.1=h712c49d_0
+  - cuda-tools=11.3.1=h712c49d_0
+  - cuda-visual-tools=11.3.1=h712c49d_0
   - cudatoolkit=11.3.1=h9edb442_11
   - curl=7.87.0=hdc1c0ab_0
   - cycler=0.11.0=pyhd8ed1ab_0
@@ -154,13 +181,19 @@ dependencies:
   - libbrotlienc=1.0.9=h166bdaf_8
   - libcblas=3.9.0=16_linux64_mkl
   - libcrc32c=1.1.2=h9c3ff4c_0
+  - libcublas=11.5.1.109=h0fd73e7_0
+  - libcufft=10.4.2.109=h2344711_0
+  - libcurand=10.2.4.109=h0189693_0
   - libcurl=7.87.0=hdc1c0ab_0
+  - libcusolver=11.1.2.109=h1e009e5_0
+  - libcusparse=11.6.0.109=hf5bfba9_0
   - libdeflate=1.14=h166bdaf_0
   - libedit=3.1.20191231=he28a2e2_2
   - libev=4.33=h516909a_1
   - libevent=2.1.10=h28343ad_4
   - libffi=3.4.2=h7f98852_5
-  - libgcc-ng=12.2.0=h65d4601_19
+  - libgcc=14.1.0=h77fa898_1
+  - libgcc-ng=14.1.0=h69a702a_1
   - libgfortran-ng=12.2.0=h69a702a_19
   - libgfortran5=12.2.0=h337968e_19
   - libglib=2.74.1=h606061b_1
@@ -174,7 +207,9 @@ dependencies:
   - libllvm11=11.1.0=he0ac6c6_5
   - libnetcdf=4.8.1=nompi_h261ec11_106
   - libnghttp2=1.47.0=hff17c54_1
+  - libnpp=11.3.3.95=h122bb27_0
   - libnsl=2.0.0=h7f98852_0
+  - libnvjpeg=11.5.0.109=h159916b_0
   - libpng=1.6.39=h753d276_0
   - libprotobuf=3.21.11=h3eb15da_0
   - libsodium=1.0.18=h36c2ea0_1
@@ -223,7 +258,7 @@ dependencies:
   - oauthlib=3.2.2=pyhd8ed1ab_0
   - openh264=2.1.1=h780b84a_0
   - openjpeg=2.5.0=h7d73246_1
-  - openssl=3.2.1=hd590300_0
+  - openssl=3.3.2=hb9d3cd8_0
   - orc=1.8.1=hfdbbad2_0
   - ossuuid=1.6.2=hf484d3e_1000
   - packaging=21.3=pyhd8ed1ab_0
@@ -365,7 +400,7 @@ dependencies:
   - pip:
       - atpublic==3.1.1
       - flufl-lock==7.1.1
-      - mlde-utils==0.0.7
+      - mlde-utils==0.2.0
       - netcdf4==1.6.3
       - python-cmethods==1.0.1
-prefix: /home/henry/miniforge3/envs/cuda-downscaling
+prefix: /home/henry/miniforge3/envs/mlde

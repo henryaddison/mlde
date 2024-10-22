@@ -1,9 +1,9 @@
 import typer
 
-from . import evaluate, postprocess
+from . import postprocess, sample
 
 app = typer.Typer()
-app.add_typer(evaluate.app, name="evaluate")
+app.add_typer(sample.app, name="sample")
 app.add_typer(postprocess.app, name="postprocess")
 
 

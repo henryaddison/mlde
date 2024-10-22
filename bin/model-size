@@ -10,22 +10,24 @@ import typer
 import logging
 import yaml
 
-from ml_downscaling_emulator.score_sde_pytorch.models.location_params import (
+from ml_downscaling_emulator.models.location_params import (
     LocationParams,
 )
 
-from ml_downscaling_emulator.score_sde_pytorch.models import utils as mutils
+from ml_downscaling_emulator.models import utils as mutils
 
-from ml_downscaling_emulator.score_sde_pytorch.models import cncsnpp  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import cunet  # noqa: F401
+from ml_downscaling_emulator.models import cncsnpp  # noqa: F401
+from ml_downscaling_emulator.models import cunet  # noqa: F401
 
-from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
+from ml_downscaling_emulator.models import (  # noqa: F401
     layerspp,  # noqa: F401
 )  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import layers  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
+from ml_downscaling_emulator.models import layers  # noqa: F401
+from ml_downscaling_emulator.models import (  # noqa: F401
     normalization,  # noqa: F401
 )  # noqa: F401
+
+from ml_downscaling_emulator.utils import model_size, param_count
 
 logger = logging.getLogger()
 logger.setLevel("INFO")
@@ -58,11 +60,15 @@ def main(
     config_path = os.path.join(workdir, "config.yml")
     config = load_config(config_path)
     score_model, location_params = load_model(config)
-    num_score_model_parameters = sum(p.numel() for p in score_model.parameters())
-    num_location_parameters = sum(p.numel() for p in location_params.parameters())
+    num_score_model_parameters = param_count(score_model)
+    num_location_parameters = param_count(location_params)
 
     typer.echo(f"Score model has {num_score_model_parameters} parameters")
     typer.echo(f"Location parameters have {num_location_parameters} parameters")
+
+    size_all_mb = sum(model_size(model) for model in [score_model, location_params])
+
+    typer.echo("model size: {:.3f}MB".format(size_all_mb))
 
 
 if __name__ == "__main__":
