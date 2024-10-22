@@ -9,4 +9,4 @@ host=${2:-sci2.jasmin}
 port=$(shuf -i 6000-9999 -n 1)
 echo "Using port ${port} on ${host}"
 
-ssh -t -L ${port}:localhost:${port} ${host} "~/mambaforge/envs/mv-mlde/bin/tensorboard --port=${port} --logdir=/gws/nopw/j04/bris_climdyn/henrya/jasmin-active/workdirs/${runs_dir}"
+ssh -t -L ${port}:localhost:${port} ${host} "~/mambaforge/envs/mlde/bin/tensorboard --port=${port} --logdir=/gws/nopw/j04/bris_climdyn/henrya/jasmin-active/workdirs/${runs_dir}"

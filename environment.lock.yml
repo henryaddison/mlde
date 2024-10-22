@@ -1,4 +1,4 @@
-name: mv-mlde
+name: mlde
 channels:
   - pytorch
   - nvidia/label/cuda-11.3.1
@@ -403,4 +403,4 @@ dependencies:
       - mlde-utils==0.2.0
       - netcdf4==1.6.3
       - python-cmethods==1.0.1
-prefix: /home/henry/miniforge3/envs/mv-mlde
+prefix: /home/henry/miniforge3/envs/mlde
