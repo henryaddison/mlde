@@ -15,7 +15,7 @@
 
 # Lint as: python3
 """Training NCSN++ on precip data with sub-VP SDE."""
-from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_12em_configs import get_default_configs
+from ml_downscaling_emulator.configs.default_ukcp_local_pr_12em_configs import get_default_configs
 
 
 def get_config():
@@ -35,6 +35,8 @@ def get_config():
   # data
   data = config.data
   data.centered = True
+  data.dataset_name = 'bham64_ccpm-4x_12em_mv'
+  data.target_transform_overrides.target_tmean150cm = "mm;recen"
 
   # model
   model = config.model

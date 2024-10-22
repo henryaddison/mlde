@@ -29,4 +29,4 @@ dynamic = ["dependencies"]
 dependencies = { file = ["requirements.txt"] }
 
 [tool.black]
-extend-exclude = '^/src/ml_downscaling_emulator/score_sde_pytorch/'
+extend-exclude = '^/src/ml_downscaling_emulator/(run_lib.py|sde_lib.py|likelihood.py|sampling.py|losses.py|models|op|configs)'

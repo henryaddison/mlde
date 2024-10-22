@@ -1,5 +1,6 @@
 # coding=utf-8
 # Copyright 2020 The Google Research Authors.
+# Modifications copyright 2024 Henry Addison
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,33 +15,28 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training conditional U-Net on precip data with sub-VP SDE.
-DEBUGGING ONLY"""
-from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_1em_configs import get_default_configs
+"""Debug config for training in a deterministic fashion."""
 
+from ml_downscaling_emulator.configs.deterministic.default_configs import get_default_configs
 
 def get_config():
   config = get_default_configs()
+
   # training
   training = config.training
-  training.sde = 'subvpsde'
-  training.continuous = True
-  training.reduce_mean = True
-
-  # sampling
-  sampling = config.sampling
-  sampling.method = 'pc'
-  sampling.predictor = 'euler_maruyama'
-  sampling.corrector = 'none'
+  training.n_epochs = 2
+  training.snapshot_freq = 5
+  training.eval_freq = 100
+  training.log_freq = 50
+  training.batch_size = 2
 
   # data
   data = config.data
-  data.centered = True
   data.dataset_name = 'debug-sample'
+  data.time_inputs=True
 
   # model
   model = config.model
   model.name = 'cunet'
-  model.ema_rate = 0.9999
 
   return config

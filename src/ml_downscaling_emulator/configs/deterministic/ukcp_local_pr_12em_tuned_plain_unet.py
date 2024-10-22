@@ -21,7 +21,7 @@ This is opposed to using a model ready for score-based denoising
 but training it in a deterministic fashion.
 """
 
-from ml_downscaling_emulator.score_sde_pytorch.configs.deterministic.default_configs import get_default_configs
+from ml_downscaling_emulator.configs.deterministic.default_configs import get_default_configs
 
 def get_config():
   config = get_default_configs()
@@ -30,7 +30,7 @@ def get_config():
   training = config.training
   training.n_epochs = 100
   training.snapshot_freq = 20
-  training.batch_size = 64
+  training.batch_size = 256
 
   # data
   data = config.data
@@ -43,7 +43,6 @@ def get_config():
   # model
   model = config.model
   model.name = 'det_cunet'
-  model.ema_rate = 1 # basically disables EMA
 
   # optimizer
   optim = config.optim
@@ -52,6 +51,6 @@ def get_config():
   optim.beta1 = 0.9
   optim.eps = 1e-8
   optim.weight_decay = 0
-  optim.warmup = -1 # 5000
-  optim.grad_clip = -1. # 1.
+  optim.warmup = 5000
+  optim.grad_clip = 1.
   return config

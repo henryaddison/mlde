@@ -21,7 +21,7 @@ This is opposed to using a model ready for score-based denoising
 but training it in a deterministic fashion.
 """
 
-from ml_downscaling_emulator.score_sde_pytorch.configs.deterministic.ukcp_local_pr_12em_tuned_plain_unet import get_config as get_default_configs
+from ml_downscaling_emulator.configs.deterministic.ukcp_local_pr_12em_tuned_plain_unet import get_config as get_default_configs
 
 def get_config():
   config = get_default_configs()

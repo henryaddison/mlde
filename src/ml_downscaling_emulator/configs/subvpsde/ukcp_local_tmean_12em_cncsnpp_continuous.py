@@ -1,6 +1,5 @@
 # coding=utf-8
 # Copyright 2020 The Google Research Authors.
-# Modifications copyright 2024 Henry Addison
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,27 +14,32 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training NCSN++ on precip data in a deterministic fashion."""
+"""Training NCSN++ on precip data with sub-VP SDE."""
+from ml_downscaling_emulator.configs.default_ukcp_local_pr_12em_configs import get_default_configs
 
-from ml_downscaling_emulator.score_sde_pytorch.configs.deterministic.default_configs import get_default_configs
 
 def get_config():
   config = get_default_configs()
-
   # training
   training = config.training
-  training.n_epochs = 100
+  training.sde = 'subvpsde'
+  training.continuous = True
+  training.reduce_mean = True
+
+  # sampling
+  sampling = config.sampling
+  sampling.method = 'pc'
+  sampling.predictor = 'euler_maruyama'
+  sampling.corrector = 'none'
 
   # data
   data = config.data
-  data.dataset_name = 'bham64_ccpm-4x_1em_psl-sphum4th-temp4th-vort4th_pr'
+  data.centered = True
+  data.dataset_name = 'bham64_ccpm-4x_12em_psl-sphum4th-temp4th-vort4th_tmean150cm'
 
   # model
   model = config.model
   model.name = 'cncsnpp'
-  model.loc_spec_channels = 0
-  model.dropout = 0.1
-  model.embedding_type = 'fourier'
   model.scale_by_sigma = False
   model.ema_rate = 0.9999
   model.normalization = 'GroupNorm'
@@ -58,5 +62,9 @@ def get_config():
   model.init_scale = 0.
   model.fourier_scale = 16
   model.conv_size = 3
+
+  # data
+  data = config.data
+  data.target_transform_key = 'mm;recen'
 
   return config

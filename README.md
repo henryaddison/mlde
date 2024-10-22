@@ -41,7 +41,7 @@ Recommended to run with a sample of the dataset.
 Train models through `bin/main.py`, e.g. to train the model used in the paper use
 
 ```sh
-python bin/main.py --config src/ml_downscaling_emulator/score_sde_pytorch/configs/subvpsde/ukcp_local_pr_12em_cncsnpp_continuous.py --workdir ${DERIVED_DATA}/path/to/models/paper-12em --mode train
+python bin/main.py --config src/ml_downscaling_emulator/configs/subvpsde/ukcp_local_pr_12em_cncsnpp_continuous.py --workdir ${DERIVED_DATA}/path/to/models/paper-12em --mode train
 ```
 
 ```sh
