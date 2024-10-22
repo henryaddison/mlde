@@ -7,7 +7,7 @@ config_name="ukcp_local_mv_debug"
 dataset="debug-sample-mv"
 
 workdir="output/test/${sde}/${config_name}/test-run"
-config_path="src/ml_downscaling_emulator/score_sde_pytorch/configs/${sde}/${config_name}.py"
+config_path="src/ml_downscaling_emulator/configs/${sde}/${config_name}.py"
 
 loc_spec_channels=2
 train_batch_size=2

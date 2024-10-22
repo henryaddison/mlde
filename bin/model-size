@@ -10,20 +10,20 @@ import typer
 import logging
 import yaml
 
-from ml_downscaling_emulator.score_sde_pytorch.models.location_params import (
+from ml_downscaling_emulator.models.location_params import (
     LocationParams,
 )
 
-from ml_downscaling_emulator.score_sde_pytorch.models import utils as mutils
+from ml_downscaling_emulator.models import utils as mutils
 
-from ml_downscaling_emulator.score_sde_pytorch.models import cncsnpp  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import cunet  # noqa: F401
+from ml_downscaling_emulator.models import cncsnpp  # noqa: F401
+from ml_downscaling_emulator.models import cunet  # noqa: F401
 
-from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
+from ml_downscaling_emulator.models import (  # noqa: F401
     layerspp,  # noqa: F401
 )  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import layers  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
+from ml_downscaling_emulator.models import layers  # noqa: F401
+from ml_downscaling_emulator.models import (  # noqa: F401
     normalization,  # noqa: F401
 )  # noqa: F401
 

@@ -14,28 +14,34 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training NCSN++ on precip data with VE SDE."""
-from ml_downscaling_emulator.score_sde_pytorch.configs.default_ukcp_local_pr_1em_configs import get_default_configs
+"""Training NCSN++ on precip data with sub-VP SDE."""
+from ml_downscaling_emulator.configs.default_ukcp_local_pr_12em_configs import get_default_configs
 
 
 def get_config():
   config = get_default_configs()
   # training
   training = config.training
-  training.sde = 'vesde'
+  training.sde = 'subvpsde'
   training.continuous = True
+  training.reduce_mean = True
 
   # sampling
   sampling = config.sampling
   sampling.method = 'pc'
-  sampling.predictor = 'reverse_diffusion'
-  sampling.corrector = 'langevin'
+  sampling.predictor = 'euler_maruyama'
+  sampling.corrector = 'none'
+
+  # data
+  data = config.data
+  data.centered = True
+  data.dataset_name = 'bham64_ccpm-4x_12em_psl-sphum4th-temp4th-vort4th_relhum150cm'
 
   # model
   model = config.model
   model.name = 'cncsnpp'
-  model.scale_by_sigma = True
-  model.ema_rate = 0.999
+  model.scale_by_sigma = False
+  model.ema_rate = 0.9999
   model.normalization = 'GroupNorm'
   model.nonlinearity = 'swish'
   model.nf = 128
@@ -52,11 +58,12 @@ def get_config():
   model.progressive_input = 'residual'
   model.progressive_combine = 'sum'
   model.attention_type = 'ddpm'
+  model.embedding_type = 'positional'
   model.init_scale = 0.
   model.fourier_scale = 16
   model.conv_size = 3
 
   # data
   data = config.data
-
+  # data.target_transform_key = 'TBC'
   return config

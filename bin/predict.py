@@ -22,33 +22,33 @@ from ml_downscaling_emulator.data import get_dataloader, np_samples_to_xr
 from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
 from mlde_utils.training.dataset import get_variables
 
-from ml_downscaling_emulator.score_sde_pytorch.losses import get_optimizer
-from ml_downscaling_emulator.score_sde_pytorch.models.ema import (
+from ml_downscaling_emulator.losses import get_optimizer
+from ml_downscaling_emulator.models.ema import (
     ExponentialMovingAverage,
 )
-from ml_downscaling_emulator.score_sde_pytorch.models.location_params import (
+from ml_downscaling_emulator.models.location_params import (
     LocationParams,
 )
 
-from ml_downscaling_emulator.score_sde_pytorch.utils import restore_checkpoint
+from ml_downscaling_emulator.utils import restore_checkpoint
 
-import ml_downscaling_emulator.score_sde_pytorch.models as models  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import utils as mutils
+import ml_downscaling_emulator.models as models  # noqa: F401
+from ml_downscaling_emulator.models import utils as mutils
 
-from ml_downscaling_emulator.score_sde_pytorch.models import cncsnpp  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import cunet  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import det_cunet  # noqa: F401
+from ml_downscaling_emulator.models import cncsnpp  # noqa: F401
+from ml_downscaling_emulator.models import cunet  # noqa: F401
+from ml_downscaling_emulator.models import det_cunet  # noqa: F401
 
-from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
+from ml_downscaling_emulator.models import (  # noqa: F401
     layerspp,  # noqa: F401
 )  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import layers  # noqa: F401
-from ml_downscaling_emulator.score_sde_pytorch.models import (  # noqa: F401
+from ml_downscaling_emulator.models import layers  # noqa: F401
+from ml_downscaling_emulator.models import (  # noqa: F401
     normalization,  # noqa: F401
 )  # noqa: F401
-import ml_downscaling_emulator.score_sde_pytorch.sampling as sampling
+import ml_downscaling_emulator.sampling as sampling
 
-from ml_downscaling_emulator.score_sde_pytorch.sde_lib import (
+from ml_downscaling_emulator.sde_lib import (
     VESDE,
     VPSDE,
     subVPSDE,
