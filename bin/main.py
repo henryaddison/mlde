@@ -22,8 +22,11 @@ from absl import flags
 from ml_collections.config_flags import config_flags
 import logging
 import os
+from dotenv import load_dotenv
 
 from knockknock import slack_sender
+
+load_dotenv()  # take environment variables from .env
 
 FLAGS = flags.FLAGS
 
