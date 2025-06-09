@@ -55,7 +55,6 @@ lint = {features = ["lint"], no-default-feature = true}
 
 [tool.pixi.dependencies]
 absl-py = { version = "==1.3.0", build = "pyhd8ed1ab_0" }
-black = { version = "==22.10.0", build = "py39hf3d152e_2" }
 bottleneck = { version = "==1.3.5", build = "py39h2ae25f5_1" }
 cdo = { version = "==2.1.0", build = "h15029e1_0" }
 codetiming = { version = "==1.4.0", build = "pyhd8ed1ab_0" }
@@ -63,7 +62,6 @@ cuda = { version = "==11.3.1", build = "h712c49d_0", channel="nvidia" }
 cudatoolkit = { version = "==11.3.1", build = "h9edb442_11" }
 dask = { version = "==2022.12.1", build = "pyhd8ed1ab_0" }
 filelock = { version = "==3.8.2", build = "pyhd8ed1ab_0" }
-flake8 = { version = "==6.0.0", build = "pyhd8ed1ab_0" }
 gxx = { version = "==8.5.0", build = "h143be6b_10" }
 iris = { version = "==3.4.0", build = "pyhd8ed1ab_0" }
 knockknock = { version = "==0.1.8.1", build = "py_0" }
@@ -74,8 +72,6 @@ netcdf4 = { version = "*" }
 ninja = { version = "==1.11.0", build = "h924138e_0" }
 pint = { version = "==0.20.1", build = "pyhd8ed1ab_0" }
 pip = { version = "==22.3.1", build = "pyhd8ed1ab_0" }
-pre-commit = { version = "==2.20.0", build = "py39hf3d152e_1" }
-pytest = { version = "==7.2.0", build = "pyhd8ed1ab_2" }
 python = { version = "==3.9.15", build = "hba424b6_0_cpython" }
 python-cdo = { version = "==1.5.7", build = "pyhd8ed1ab_0" }
 python-dotenv = { version = "==1.0.1", build = "pyhd8ed1ab_0" }
