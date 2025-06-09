@@ -7,27 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
-
     steps:
     - name: Clone repo
-      uses: actions/checkout@v4
-    - name: setup-micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: actions/checkout@v2
+    - name: Set up Pixi
+      uses: prefix-dev/setup-pixi@v0.8.8
       with:
-        environment-file: environment.lock.yml
-        init-shell: bash
-        # cache-environment: true
-        post-cleanup: 'all'
-    - name: Install package
-      run: |
-        pip install -e .
-      shell: micromamba-shell {0}
-    - name: Install unet
-      uses: actions/checkout@v4
-      with:
-        repository: henryaddison/Pytorch-UNet
-        path: src/ml_downscaling_emulator/unet
-    - name: Test with pytest
-      run: |
-        pytest
-      shell: micromamba-shell {0}
+        pixi-version: v0.48.0
+        cache: true
+        environments: dev
+        activate-environment: true
+    - name: Run tests
+      run: pixi run test

@@ -7,11 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
       - name: Black
         uses: psf/black@stable
         with:
           version: "~= 22.0"
-      - name: Install flake8
-        run: pip install flake8
-      - name: Flake8
-        uses: suo/flake8-github-action@v1
+      - name: flake8 Lint
+        uses: py-actions/flake8@v2
+        with:
+          flake8-version: "6.0.0"
