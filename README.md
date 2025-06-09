@@ -8,29 +8,25 @@ Diffusion model implementation forked from PyTorch implementation for the paper 
 
 ## Dependencies
 
+Assumes you have [pixi](https://pixi.sh) installed for managing dependencies.
+
 1. Clone repo and cd into it
-2. Create conda environment: `conda env create -f environment.lock.yml` (or add dependencies to your own: `conda env install -f environment.txt`)
-3. Activate the conda environment (if not already done so)
-4. Install ml_downscaling_emulator locally: `pip install -e .`
-5. \[Optional\] Install U-Net code: `git clone --depth 1 https://github.com/henryaddison/Pytorch-UNet.git src/ml_downscaling_emulator/unet` - this is only necessary if you wish to use the deterministic comparison models.
-6. Configure application behaviour with environment variables. See `.env.example` for variables that can be set.
+2. \[Optional\] Install U-Net code: `git clone --depth 1 https://github.com/henryaddison/Pytorch-UNet.git src/ml_downscaling_emulator/unet` - this is only necessary if you wish to use the deterministic comparison models.
+3. Configure application behaviour with environment variables. See `.env.example` for variables that can be set.
 
 Any datasets are assumed to be found in `${DERIVED_DATA}/moose/nc-datasets/{dataset_name}/`. In particular, the config key config.data.dataset_name is the name of the dataset to use to train the model.
 
-### Updating conda environment
+### Updating dependencies
 
-To add new packages or update their version, it is recommended to use the `environment.txt` file (for conda packages) and `requirements.txt` file (for pip packages) then run:
+To add new packages or update their version, can update the dependencies in pixi.toml then run
 ```sh
-conda env install -f environment.txt
-pip install -e . # this will implicitly use requirement.txt
-conda env export -f environment.lock.yml
+pixi install
 ```
-then commit any changes (though make sure not to include mlde-notebooks package in the lock file since that is not distributed via PyPI).
-
-To sync environment with the lock file use:
+or add them using:
 ```sh
-conda env update -f environment.lock.yml --prune
+pixi add NEW_DEP
 ```
+then commit any changes to pixi.toml and pixi.lock
 
 ## Diffusion Model Usage
 
@@ -45,7 +41,7 @@ The datasets used in the paper can be found on [Zenodo](https://doi.org/10.5281/
 ### Smoke test
 
 ```sh
-tests/smoke-test
+pixi run tests/smoke-test
 ```
 
 Uses a simpler network to test the full training and sampling regime.
@@ -56,7 +52,7 @@ Recommended to run with a sample of the dataset.
 Train models through `bin/main.py`, e.g. to train the model used in the paper use
 
 ```sh
-python bin/main.py --config src/ml_downscaling_emulator/configs/subvpsde/ukcp_local_pr_12em_cncsnpp_continuous.py --workdir ${DERIVED_DATA}/path/to/models/paper-12em --mode train
+pixi run python bin/main.py --config src/ml_downscaling_emulator/configs/subvpsde/ukcp_local_pr_12em_cncsnpp_continuous.py --workdir ${DERIVED_DATA}/path/to/models/paper-12em --mode train
 ```
 
 ```sh
@@ -89,7 +85,7 @@ Functionalities can be configured through config files, or more conveniently, th
 Once have trained a model create samples from it with `bin/predict.py`, e.g.
 
 ```sh
-python bin/predict.py --checkpoint epoch_20 --dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --split test  --ensemble-member 01 --input-transform-dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --input-transform-key pixelmmsstan --num-samples 1 ${DERIVED_DATA}/path/to/models/paper-12em
+pixi run python bin/predict.py --checkpoint epoch_20 --dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --split test  --ensemble-member 01 --input-transform-dataset bham_60km-4x_12em_psl-sphum4th-temp4th-vort4th_eqvt_random-season --input-transform-key pixelmmsstan --num-samples 1 ${DERIVED_DATA}/path/to/models/paper-12em
 ```
 
 This example command will:
