@@ -1,3 +1,0 @@
-flufl-lock
-mlde-utils~=0.2.0
-python-cmethods
