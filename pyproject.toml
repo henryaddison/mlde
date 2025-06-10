@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ml_downscaling_emulator"
-version = "0.2.1"
+version = "0.2.2a1"
 authors = [
   { name="Henry Addison", email="henry.addison@bristol.ac.uk" },
 ]
@@ -20,7 +20,9 @@ classifiers = [
 dependencies = [
   "flufl-lock==7.1.1",
   "mlde-utils==0.2.0",
+  "mlflow",
   #"python-cmethods==1.0.1",
+  "tqdm",
 ]
 
 [dependency-groups]
@@ -38,12 +40,12 @@ dev = [{include-group = "test"}]
 extend-exclude = '^/src/ml_downscaling_emulator/(run_lib.py|sde_lib.py|likelihood.py|sampling.py|losses.py|models|op|configs)'
 
 [tool.pixi.workspace]
-channels = ["pytorch", "nvidia/label/cuda-11.3.1", "conda-forge", "nodefaults"]
+channels = ["pytorch", "nvidia", "conda-forge", "nodefaults"]
 name = "mlde"
 platforms = ["linux-64"]
 
 [tool.pixi.system-requirements]
-cuda = "11.3"
+cuda = "11.7"
 
 [tool.pixi.environments]
 default = {features = [], solve-group = "default"}
@@ -58,8 +60,7 @@ absl-py = { version = "==1.3.0", build = "pyhd8ed1ab_0" }
 bottleneck = { version = "==1.3.5", build = "py39h2ae25f5_1" }
 cdo = { version = "==2.1.0", build = "h15029e1_0" }
 codetiming = { version = "==1.4.0", build = "pyhd8ed1ab_0" }
-cuda = { version = "==11.3.1", build = "h712c49d_0", channel="nvidia" }
-cudatoolkit = { version = "==11.3.1", build = "h9edb442_11" }
+cuda = { version = "==11.7" }
 dask = { version = "==2022.12.1", build = "pyhd8ed1ab_0" }
 filelock = { version = "==3.8.2", build = "pyhd8ed1ab_0" }
 gxx = { version = "==8.5.0", build = "h143be6b_10" }
@@ -67,7 +68,7 @@ iris = { version = "==3.4.0", build = "pyhd8ed1ab_0" }
 knockknock = { version = "==0.1.8.1", build = "py_0" }
 metpy = { version = "==1.3.1", build = "pyhd8ed1ab_0" }
 ml-collections = { version = "==0.1.1", build = "pyhd8ed1ab_0" }
-mlflow = { version = "==2.0.1", build = "py39ha39b057_2" }
+mkl = { version = "<=2024.0" }
 netcdf4 = { version = "*" }
 ninja = { version = "==1.11.0", build = "h924138e_0" }
 pint = { version = "==0.20.1", build = "pyhd8ed1ab_0" }
@@ -75,11 +76,12 @@ pip = { version = "==22.3.1", build = "pyhd8ed1ab_0" }
 python = { version = "==3.9.15", build = "hba424b6_0_cpython" }
 python-cdo = { version = "==1.5.7", build = "pyhd8ed1ab_0" }
 python-dotenv = { version = "==1.0.1", build = "pyhd8ed1ab_0" }
-pytorch = { version = "==1.12.1", build = "py3.9_cuda11.3_cudnn8.3.2_0" }
+pytorch = { version = "==1.13.1" }
+pytorch-cuda = { version = "==11.7" }
 shortuuid = { version = "==1.0.11", build = "pyhd8ed1ab_0" }
 tensorboard = { version = "==2.11.0", build = "pyhd8ed1ab_0" }
-torchaudio = { version = "==0.12.1", build = "py39_cu113" }
-torchvision = { version = "==0.13.1", build = "py39_cu113" }
+torchaudio = { version = "==0.13.1" }
+torchvision = { version = "==0.14.1" }
 typer = { version = "==0.7.0", build = "pyhd8ed1ab_0" }
 wandb = { version = "==0.13.7", build = "pyhd8ed1ab_0" }
 xarray = { version = "==2022.12.0", build = "pyhd8ed1ab_0" }
