@@ -8,6 +8,7 @@ source ~/.bashrc
 set -euo pipefail
 
 cd /home/users/vf20964/code/mlde
+export CUDA_HOME=${PWD}/.pixi/envs/default
 
 export DERIVED_DATA=/gws/nopw/j04/bris_climdyn/henrya/bp-backups/
 export KK_SLACK_WH_URL=https://hooks.slack.com
