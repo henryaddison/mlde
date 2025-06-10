@@ -4,7 +4,6 @@
 module load gcc
 
 source ~/.bashrc
-mamba activate mlde
 
 set -euo pipefail
 
