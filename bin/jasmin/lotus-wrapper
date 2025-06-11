@@ -1,19 +1,16 @@
 #!/bin/bash
 # Wrapper script around commands for interacting with a model to queue on LOTUS on JASMIN
 
-module load gcc
-
-source ~/.bashrc
-
 set -euo pipefail
 
 cd /home/users/vf20964/code/mlde
-export CUDA_HOME=${PWD}/.pixi/envs/default
 
 export DERIVED_DATA=/gws/nopw/j04/bris_climdyn/henrya/bp-backups/
 export KK_SLACK_WH_URL=https://hooks.slack.com
 export WANDB_EXPERIMENT_NAME="ml-downscaling-emulator"
 
 nvidia-smi
+
+pixi run python -c "import torch; print(torch.__version__); print(torch.cuda.is_available())"
 
 $@
