@@ -4,9 +4,9 @@
 set -euo pipefail
 
 runs_dir=$1
-host=${2:-sci2.jasmin}
+host=${2:-sci-vm-03.jasmin}
 
 port=$(shuf -i 6000-9999 -n 1)
 echo "Using port ${port} on ${host}"
 
-ssh -t -L ${port}:localhost:${port} ${host} "~/mambaforge/envs/mlde/bin/tensorboard --port=${port} --logdir=/gws/nopw/j04/bris_climdyn/henrya/jasmin-active/workdirs/${runs_dir}"
+ssh -t -L ${port}:localhost:${port} ${host} "pixi run --manifest-path /home/users/vf20964/code/mlde tensorboard --port=${port} --logdir=${runs_dir}"
