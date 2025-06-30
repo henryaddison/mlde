@@ -10,7 +10,7 @@ set -euo pipefail
 
 cd /home/users/vf20964/code/mlde
 
-export DERIVED_DATA=/gws/nopw/j04/bris_climdyn/henrya/bp-backups/
+export DERIVED_DATA=/gws/nopw/j04/furflex/henrya/data/cpmgem-daily/cpmgem-paper-JAMES/
 export KK_SLACK_WH_URL=https://hooks.slack.com
 export WANDB_EXPERIMENT_NAME="ml-downscaling-emulator"
 
