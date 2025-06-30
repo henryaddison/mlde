@@ -27,4 +27,4 @@ while getopts ":m:t:" opt; do
 done
 shift "$((OPTIND -1))"
 
-sbatch --parsable --mail-type=ALL --mail-user=vf20964@bristol.ac.uk --gres=gpu:1 --partition=orchid --account=orchid --time=${stime} --mem=${smem} -- ${SCRIPT_DIR}/lotus-wrapper $@
+sbatch --parsable --mail-type=ALL --mail-user=vf20964@bristol.ac.uk --gres=gpu:1 --partition=orchid --account=orchid --qos=orchid --time=${stime} --mem=${smem} -- ${SCRIPT_DIR}/lotus-wrapper $@
