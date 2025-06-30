@@ -1,8 +1,6 @@
 #!/bin/bash
 # Wrapper script around commands for interacting with a model to queue on LOTUS on JASMIN
 
-module load gcc
-
 source ~/.bashrc
 
 # >>> conda initialize >>>
