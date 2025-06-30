@@ -1,6 +1,7 @@
 """Generate samples"""
 
 from collections import defaultdict
+import hashlib
 import itertools
 import os
 from pathlib import Path
@@ -225,6 +226,7 @@ def main(
     input_transform_dataset: str = None,
     input_transform_key: str = None,
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
+    num_scales: int = None,
 ):
     config_path = os.path.join(workdir, "config.yml")
     config = load_config(config_path)
@@ -241,14 +243,23 @@ def main(
 
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
+    if num_scales is not None:
+        config.model.num_scales = num_scales
 
-    output_dirpath = samples_path(
-        workdir=workdir,
-        checkpoint=checkpoint,
-        dataset=dataset,
-        input_xfm=f"{config.data.input_transform_dataset}-{config.data.input_transform_key}",
-        split=split,
-        ensemble_member=ensemble_member,
+    config_hash = hashlib.shake_256(
+        bytes(repr(config.to_yaml(sort_keys=True)), "UTF-8")
+    ).hexdigest(8)
+
+    output_dirpath = (
+        samples_path(
+            workdir=workdir,
+            checkpoint=checkpoint,
+            dataset=dataset,
+            input_xfm=f"{config.data.input_transform_dataset}-{config.data.input_transform_key}",
+            split=split,
+            ensemble_member=ensemble_member,
+        )
+        / config_hash
     )
     os.makedirs(output_dirpath, exist_ok=True)
 

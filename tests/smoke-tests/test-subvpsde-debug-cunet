@@ -21,4 +21,4 @@ eval_batch_size=32
 checkpoint="epoch_${epoch}"
 
 rm -rf "${workdir}/samples/${checkpoint}/${dataset}"
-python bin/predict.py ${workdir} --dataset ${dataset} --checkpoint ${checkpoint} --batch-size ${eval_batch_size} --num-samples ${num_samples} --ensemble-member 01
+python bin/predict.py ${workdir} --dataset ${dataset} --checkpoint ${checkpoint} --batch-size ${eval_batch_size} --num-samples ${num_samples} --ensemble-member 01 --num-scales 5
