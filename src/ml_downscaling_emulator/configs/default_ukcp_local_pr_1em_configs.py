@@ -20,13 +20,6 @@ def get_default_configs():
   training.reduce_mean = False
   training.random_crop_size = 0
 
-  # sampling
-  config.sampling = sampling = ml_collections.ConfigDict()
-  sampling.n_steps_each = 1
-  sampling.noise_removal = True
-  sampling.probability_flow = False
-  sampling.snr = 0.16
-
   # evaluation
   config.eval = evaluate = ml_collections.ConfigDict()
   evaluate.begin_ckpt = 9
@@ -63,6 +56,14 @@ def get_default_configs():
   model.dropout = 0.1
   model.embedding_type = 'fourier'
   model.loc_spec_channels = 0
+
+  # sampling
+  config.sampling = sampling = ml_collections.ConfigDict()
+  sampling.n_steps_each = 1
+  sampling.noise_removal = True
+  sampling.probability_flow = False
+  sampling.snr = 0.16
+  sampling.num_scales = model.get_ref('num_scales')
 
   # optimization
   config.optim = optim = ml_collections.ConfigDict()

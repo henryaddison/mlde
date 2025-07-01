@@ -109,21 +109,21 @@ def load_model(config, ckpt_filename):
             sde = VESDE(
                 sigma_min=config.model.sigma_min,
                 sigma_max=config.model.sigma_max,
-                N=config.model.num_scales,
+                N=config.sampling.num_scales,
             )
             sampling_eps = 1e-5
         elif config.training.sde == "vpsde":
             sde = VPSDE(
                 beta_min=config.model.beta_min,
                 beta_max=config.model.beta_max,
-                N=config.model.num_scales,
+                N=config.sampling.num_scales,
             )
             sampling_eps = 1e-3
         elif config.training.sde == "subvpsde":
             sde = subVPSDE(
                 beta_min=config.model.beta_min,
                 beta_max=config.model.beta_max,
-                N=config.model.num_scales,
+                N=config.sampling.num_scales,
             )
             sampling_eps = 1e-3
         else:
@@ -240,11 +240,14 @@ def main(
 
         if "target_transform_overrides" not in config.data:
             config.data.target_transform_overrides = config_dict.ConfigDict()
+        if "num_scales" not in config.sampling:
+            config.sampling.num_scales = config.model.num_scales
 
     if input_transform_key is not None:
         config.data.input_transform_key = input_transform_key
+
     if num_scales is not None:
-        config.model.num_scales = num_scales
+        config.sampling.num_scales = num_scales
 
     config_hash = hashlib.shake_256(
         bytes(repr(config.to_yaml(sort_keys=True)), "UTF-8")
