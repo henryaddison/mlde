@@ -22,7 +22,7 @@ dependencies = [
   "mlde-utils==0.2.0",
   "mlflow",
   #"python-cmethods==1.0.1",
-  "tqdm",
+  "tqdm", "torchinfo>=1.8.0,<2",
 ]
 
 [dependency-groups]

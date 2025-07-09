@@ -3,7 +3,7 @@
 
 import os
 from pathlib import Path
-
+import torchinfo
 from ml_collections import config_dict
 
 import typer
@@ -69,6 +69,8 @@ def main(
     size_all_mb = sum(model_size(model) for model in [score_model, location_params])
 
     typer.echo("model size: {:.3f}MB".format(size_all_mb))
+
+    torchinfo.summary(score_model)
 
 
 if __name__ == "__main__":
