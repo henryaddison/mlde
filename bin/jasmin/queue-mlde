@@ -5,11 +5,20 @@ set -euo pipefail
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+sgpu=1
+spartition=standard
+saccount=furflex
 smem=128G
 stime=1-00:00:00
 
-while getopts ":m:t:" opt; do
+while getopts ":p:g:m:t:" opt; do
   case ${opt} in
+    p)
+      spartition=${OPTARG}
+      ;;
+    g)
+      sgpu=${OPTARG}
+      ;;
     m)
       smem=${OPTARG}
       ;;
@@ -27,4 +36,18 @@ while getopts ":m:t:" opt; do
 done
 shift "$((OPTIND -1))"
 
-sbatch --parsable --mail-type=ALL --mail-user=vf20964@bristol.ac.uk --gres=gpu:1 --partition=orchid --account=orchid --qos=orchid --time=${stime} --mem=${smem} -- ${SCRIPT_DIR}/lotus-wrapper $@
+
+if [[ $sgpu -ge 1 ]]; then
+  spartition="orchid"
+fi
+
+if [[ $sgpu -eq 0 ]] && [[ $spartition == "orchid" ]]; then
+  echo "Don't use orchid when don't need a GPU"
+  exit 1
+fi
+
+if [[ ${spartition} == "orchid" ]]; then
+  saccount="orchid"
+fi
+
+sbatch --parsable --mail-type=ALL --mail-user=vf20964@bristol.ac.uk $([[ sgpu -ge 1 ]] && echo "--gres=gpu:${sgpu}") --partition=${spartition} --account=${saccount} --qos=${spartition} --time=${stime} --mem=${smem} -- ${SCRIPT_DIR}/lotus-wrapper $@
