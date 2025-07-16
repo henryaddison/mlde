@@ -54,6 +54,7 @@ def bcsd(
     variable: str = "pr",
     split: str = "test",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
+    window_size: int = 61,
 ):
     r"""Script to perform downscaling with the time-aligned BCSD method.
 
@@ -100,36 +101,25 @@ def bcsd(
     Example usage:
 
     ```
-    # Path to input dataset climatology.
-    INPUT_DATA_CLIM=<input_data_clim>
+    WORKDIR=<base dir for storing downscaled samples>
 
-    # Path to spatially filtered target climatology.
-    FILTERED_TARGET_CLIM=<filtered_target_clim>
+    DATASET=<name of dataset to downscale>
+    SPLIT=<split of dataset to downscale, e.g. "test">
+    ENSEMBLE_MEMBER=<ensemble member to downscale, e.g. "01">
 
-    # Path to unfiltered target climatology.
-    TARGET_CLIM=<target_clim>
+    TRAIN_DATASET=<name of dataset to fit BCSD method>
 
-    # Path to dataset to be downscaled.
-    INPUT_DATA=<parent_dir>/low_resolution_dataset.zarr
+    VARIABLE=<variable to downscale, e.g. "pr">
 
-    # Time range to be downscaled.
-    TIME_START=2094
-    TIME_STOP=2097
-
-    # Path to the output dataset.
-    OUTPUT_PATH=<parent_dir>/bcsd_downscaled_dataset_${TIME_START}_${TIME_STOP}.zarr
+    WINDOW_SIZE=<size of the window used to compute the climatology statistics, e.g. 61>
 
     mlde bcsd bcsd \
-    --input_data=${INPUT_DATA} \
-    --input_data_clim=${INPUT_DATA_CLIM} \
-    --filtered_target_clim=${FILTERED_TARGET_CLIM} \
-    --target_clim=${TARGET_CLIM} \
-    --time_start=${TIME_START} \
-    --time_stop=${TIME_STOP} \
-    --output_path=${OUTPUT_PATH} \
-    --multiplicative_vars=RAIN_24h
+    ${WORKDIR} ${DATASET} ${TRAIN_DATASET} \
+    --split=${SPLIT} \
+    --ensemble_member=${ENSEMBLE_MEMBER} \
+    --variable=${VARIABLE} \
+    --window_size=${WINDOW_SIZE}
     ```
-
     """
 
     output_dirpath = samples_path(
@@ -166,6 +156,7 @@ def bcsd(
         lr_da=lr_da,
         filtered_da=filtered_da,
         target_da=target_da,
+        window_size=window_size,
     )
 
     output_filepath = os.path.join(output_dirpath, f"predictions-{shortuuid.uuid()}.nc")
@@ -192,35 +183,34 @@ def bcsd(
 
 
 def _bcsd_on_chunks(
-    source: xr.Dataset,
-    lr_da: xr.Dataset,
-    filtered_da: xr.Dataset,
-    target_da: xr.Dataset,
+    source: xr.DataArray,
+    lr_da: xr.DataArray,
+    filtered_da: xr.DataArray,
+    target_da: xr.DataArray,
     method: str = "gaussian",
     multiplicative: bool = True,
-) -> xr.Dataset:
+    window_size: int = 3,
+) -> xr.DataArray:
     """Process an input data chunk with the BCSD method.
 
     Args:
-      source: The source data chunk to be processed with the BCSD method.
-      original_clim: The climatology of the source data.
-      filtered_clim: The climatology of the spatially filtered target data.
-      target_clim: The climatology of the unfiltered target data.
+      source: The source data to be processed with the BCSD method.
+      lr_da: The low-resolution data used to fit the BCSD method.
+      filtered_da: The spatially filtered target data for fitting the BCSD method.
+      target_da: The unfiltered target data for fitting the BCSD method.
       method: The method to use for quantile mapping.
       multiplicative: Whether to use multiplicative correction (e.g. for precipitation variables).
+      window_size: The size of the window used to compute the climatology statistics.
     Returns:
-      The BCSD-downscaled data as an xarray Dataset.
+      The BCSD-downscaled data as an xarray DataArray.
     """
     sel = dict(
         dayofyear=source["time"].dt.dayofyear,
-        #   hour=source['time'].dt.hour,
         drop=True,
     )
-    window_size = 3
-    # variables = [str(key) for key in source.keys()]
+
     if method == "gaussian":
-        # clim_mean = _get_climatology_mean(original_clim, variables, **sel)
-        # clim_std = _get_climatology_std(original_clim, variables, **sel)
+        # Compute the climatology of the low-resolution data.
         clim_mean = compute_daily_stat(
             lr_da, window_size=window_size, stat_fn="mean"
         ).sel(**sel)
@@ -232,39 +222,31 @@ def _bcsd_on_chunks(
         source_standard = (source - clim_mean) / clim_std
 
         # Get value of the same quantile in the filtered climatology, keep anom.
-        # filtered_clim_std = _get_climatology_std(filtered_clim, variables, **sel)
         filtered_clim_std = compute_daily_stat(
             filtered_da, window_size=window_size, stat_fn="std"
         ).sel(**sel)
         source_bc_anom = source_standard * filtered_clim_std
 
         # Add anom to the mean of the unfiltered climatology.
-        # target_clim_mean = _get_climatology_mean(target_clim, variables, **sel)
         target_clim_mean = compute_daily_stat(
             target_da, window_size=window_size, stat_fn="mean"
         ).sel(**sel)
 
-        # source_bcsd = target_clim_mean + source_bc_anom
+        source_bcsd = target_clim_mean + source_bc_anom
 
         # Use multiplicative correction for precipitation variables
-        if multiplicative:  # MULTIPLICATIVE_VARS.value:
-            # filtered_clim_mean = _get_climatology_mean(
-            #     filtered_clim, MULTIPLICATIVE_VARS.value, **sel
-            # )
+        if multiplicative:
             filtered_clim_mean = compute_daily_stat(
                 filtered_da, window_size=window_size, stat_fn="mean"
             ).sel(**sel)
-            # for var in MULTIPLICATIVE_VARS.value:
             # Compute the full field corresponding to the filtered climatology
             # quantile. Then, keep the multiplicative anomaly.
             bc_mult_anom = (source_bc_anom + filtered_clim_mean) / (filtered_clim_mean)
             # Multiply the anomaly by the target climatology.
             var_bcsd = bc_mult_anom * target_clim_mean
-            # source_bcsd = source_bcsd.drop_vars(var).assign(**{var: var_bcsd})
+            source_bcsd = var_bcsd
 
-        return var_bcsd.drop_vars(
-            ["dayofyear"]
-        )  # source_bcsd.drop_vars(['hour', 'dayofyear'])
+        return source_bcsd.drop_vars(["dayofyear"])
     else:
         raise ValueError(f"BCSD method {method} not yet implemented.")
 
