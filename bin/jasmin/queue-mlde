@@ -7,14 +7,15 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 sgpu=1
 spartition=standard
+sqos=standard
 saccount=furflex
 smem=128G
 stime=1-00:00:00
 
-while getopts ":p:g:m:t:" opt; do
+while getopts ":q:g:m:t:" opt; do
   case ${opt} in
-    p)
-      spartition=${OPTARG}
+    q)
+      sqos=${OPTARG}
       ;;
     g)
       sgpu=${OPTARG}
@@ -38,16 +39,17 @@ shift "$((OPTIND -1))"
 
 
 if [[ $sgpu -ge 1 ]]; then
-  spartition="orchid"
+  sqos="orchid"
 fi
 
-if [[ $sgpu -eq 0 ]] && [[ $spartition == "orchid" ]]; then
+if [[ $sgpu -eq 0 ]] && [[ $sqos == "orchid" ]]; then
   echo "Don't use orchid when don't need a GPU"
   exit 1
 fi
 
-if [[ ${spartition} == "orchid" ]]; then
+if [[ ${sqos} == "orchid" ]]; then
   saccount="orchid"
+  spartition="orchid"
 fi
 
-sbatch --parsable --mail-type=ALL --mail-user=vf20964@bristol.ac.uk $([[ sgpu -ge 1 ]] && echo "--gres=gpu:${sgpu}") --partition=${spartition} --account=${saccount} --qos=${spartition} --time=${stime} --mem=${smem} -- ${SCRIPT_DIR}/lotus-wrapper $@
+sbatch --parsable --mail-type=ALL --mail-user=vf20964@bristol.ac.uk $([[ sgpu -ge 1 ]] && echo "--gres=gpu:${sgpu}") --partition=${spartition} --account=${saccount} --qos=${sqos} --time=${stime} --mem=${smem} -- ${SCRIPT_DIR}/lotus-wrapper $@
