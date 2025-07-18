@@ -56,6 +56,7 @@ def bcsd(
     split: str = "test",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
     window_size: int = 61,
+    version="v1",
 ):
     r"""Script to perform downscaling with the time-aligned BCSD method.
 
@@ -146,7 +147,16 @@ def bcsd(
 
     typer.echo("Running BCSD...")
 
-    bcsd_da = _bcsd_on_chunks(
+    if version == "v1":
+        bcsd_func = _bcsd_on_chunks
+    elif version == "v2":
+        bcsd_func = _bcsd2
+    else:
+        raise ValueError(
+            f"Unknown BCSD version: {version}. Supported versions: v1, v2."
+        )
+
+    bcsd_da = bcsd_func(
         source=source_da,
         lr_da=lr_da,
         target_da=target_da,
