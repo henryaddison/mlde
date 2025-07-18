@@ -385,9 +385,9 @@ def _bcsd2(
     target_da = target_da.where(target_da >= target_threshold)
 
     # square root transform the wet-day data to make it more Gaussian-like
-    source = np.pow(source, 1 / 2)
-    lr_da = np.pow(lr_da, 1 / 2)
-    target_da = np.pow(target_da, 1 / 2)
+    source = np.power(source, 1 / 2)
+    lr_da = np.power(lr_da, 1 / 2)
+    target_da = np.power(target_da, 1 / 2)
 
     bcsd_da = _bcsd_on_chunks(
         source=source,
@@ -396,7 +396,7 @@ def _bcsd2(
         window_size=window_size,
     )
     # square the data to reverse the square root transform.
-    bcsd_da = np.pow(bcsd_da, 2)
+    bcsd_da = np.power(bcsd_da, 2)
 
     # re-add any dry days as zeros
     bcsd_da.fillna(0)
