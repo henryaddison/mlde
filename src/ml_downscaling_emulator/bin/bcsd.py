@@ -290,6 +290,9 @@ def _bcsd_on_chunks(
             var_bcsd = bc_mult_anom * target_clim_mean
             source_bcsd = var_bcsd
 
+        # Ensure no negative precip values in the output.
+        source_bcsd = source_bcsd.clip(min=0)
+
         return source_bcsd.drop_vars(["dayofyear"])
     else:
         raise ValueError(f"BCSD method {method} not yet implemented.")
