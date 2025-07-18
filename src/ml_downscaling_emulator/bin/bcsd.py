@@ -27,7 +27,7 @@ import shortuuid
 import typer
 import xarray as xr
 
-from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
+from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER, TIME_PERIODS
 from mlde_utils.training.dataset import open_raw_dataset_split
 from ml_downscaling_emulator.bin.climatology import compute_daily_stat
 from ml_downscaling_emulator.bin.sample import _np_samples_to_xr
@@ -140,47 +140,76 @@ def bcsd(
         ensemble_member=[ensemble_member]
     )
 
-    logger.info(f"Loading low-res and target {variable}.")
-    lr_da = train_ds[f"lin{variable}"]
-    target_da = train_ds[f"target_{variable}"]
-    source_da = eval_ds[f"lin{variable}"]
+    def tp_from_time(x):
+        for tp_key, (tp_start, tp_end) in TIME_PERIODS.items():
+            if (x >= tp_start) and (x <= tp_end):
+                return tp_key
+        raise RuntimeError(f"No time period for {x}")
 
-    typer.echo("Running BCSD...")
+    time_period_coord_values = xr.apply_ufunc(
+        tp_from_time, train_ds["time"], input_core_dims=None, vectorize=True
+    )
+    train_ds = train_ds.assign_coords(
+        time_period=("time", time_period_coord_values.data)
+    )
 
-    if version == "v1":
-        bcsd_func = _bcsd_on_chunks
-    elif version == "v2":
-        bcsd_func = _bcsd2
-    else:
-        raise ValueError(
-            f"Unknown BCSD version: {version}. Supported versions: v1, v2."
+    time_period_coord_values = xr.apply_ufunc(
+        tp_from_time, eval_ds["time"], input_core_dims=None, vectorize=True
+    )
+    eval_ds = eval_ds.assign_coords(time_period=("time", time_period_coord_values.data))
+
+    xr_samples = []
+
+    for tp, tp_eval_ds in eval_ds.groupby("time_period"):
+        tp_train_ds = train_ds.where(train_ds["time_period"] == tp, drop=True)
+
+        logger.info(f"Loading low-res and target {variable}.")
+        lr_da = tp_train_ds[f"lin{variable}"]
+        target_da = tp_train_ds[f"target_{variable}"]
+        source_da = tp_eval_ds[f"lin{variable}"]
+
+        typer.echo(f"Running BCSD for {tp}...")
+
+        if version == "v1":
+            bcsd_func = _bcsd_on_chunks
+        elif version == "v2":
+            bcsd_func = _bcsd2
+        else:
+            raise ValueError(
+                f"Unknown BCSD version: {version}. Supported versions: v1, v2."
+            )
+
+        bcsd_da = bcsd_func(
+            source=source_da,
+            lr_da=lr_da,
+            target_da=target_da,
+            window_size=window_size,
         )
 
-    bcsd_da = bcsd_func(
-        source=source_da,
-        lr_da=lr_da,
-        target_da=target_da,
-        window_size=window_size,
-    )
+        cf_data_vars = {
+            key: tp_eval_ds.data_vars[key]
+            for key in [
+                "rotated_latitude_longitude",
+                "time_bnds",
+                "grid_latitude_bnds",
+                "grid_longitude_bnds",
+            ]
+            if key in tp_eval_ds.variables
+        }
+        coords = tp_eval_ds.coords
+
+        xr_samples.append(
+            _np_samples_to_xr(
+                bcsd_da.values,
+                coords=coords,
+                target_transform=None,
+                cf_data_vars=cf_data_vars,
+            )
+        )
+
+    xr_samples = xr.concat(xr_samples, dim="time")
 
     output_filepath = os.path.join(output_dirpath, f"predictions-{shortuuid.uuid()}.nc")
-
-    cf_data_vars = {
-        key: eval_ds.data_vars[key]
-        for key in [
-            "rotated_latitude_longitude",
-            "time_bnds",
-            "grid_latitude_bnds",
-            "grid_longitude_bnds",
-        ]
-        if key in eval_ds.variables
-    }
-    coords = eval_ds.coords
-
-    xr_samples = _np_samples_to_xr(
-        bcsd_da.values, coords=coords, target_transform=None, cf_data_vars=cf_data_vars
-    )
-
     logger.info(f"Saving BCSD predictions to {output_filepath}")
     xr_samples[f"pred_{variable}"].encoding.update(zlib=True, complevel=5)
     xr_samples.to_netcdf(output_filepath)
@@ -223,6 +252,7 @@ def _bcsd_on_chunks(
 
     if method == "gaussian":
         # Compute the climatology of the low-resolution data.
+        logger.info(f"Computing low-res climatology")
         clim_mean = compute_daily_stat(
             lr_da, window_size=window_size, stat_fn="mean"
         ).sel(**sel)
@@ -234,12 +264,14 @@ def _bcsd_on_chunks(
         source_standard = (source - clim_mean) / clim_std
 
         # Get value of the same quantile in the filtered climatology, keep anom.
+        logger.info(f"Computing filtered hi-res climatology")
         filtered_clim_std = compute_daily_stat(
             filtered_da, window_size=window_size, stat_fn="std"
         ).sel(**sel)
         source_bc_anom = source_standard * filtered_clim_std
 
         # Add anom to the mean of the unfiltered climatology.
+        logger.info(f"Computing hi-res climatology")
         target_clim_mean = compute_daily_stat(
             target_da, window_size=window_size, stat_fn="mean"
         ).sel(**sel)
