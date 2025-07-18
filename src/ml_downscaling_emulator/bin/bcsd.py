@@ -19,9 +19,10 @@
 
 import functools
 import logging
+import numpy as np
 import os
 from pathlib import Path
-from scipy import ndimage
+import scipy
 import shortuuid
 import typer
 import xarray as xr
@@ -279,7 +280,80 @@ def _low_pass_filter(
     scales = tuple(scale * float(dim in spatial_dims) for dim in ordered_dims)
 
     gaussian_filter = functools.partial(
-        ndimage.gaussian_filter,
+        scipy.ndimage.gaussian_filter,
         sigma=scales,
     )
     return xr.apply_ufunc(gaussian_filter, source.load())
+
+
+def _bcsd2(
+    source: xr.DataArray,
+    lr_da: xr.DataArray,
+    target_da: xr.DataArray,
+    method: str = "gaussian",
+    multiplicative: bool = True,
+    window_size: int = 3,
+) -> xr.DataArray:
+    """Process an input data chunk with the BCSD method.
+
+    Args:
+      source: The source data to be processed with the BCSD method.
+      lr_da: The low-resolution data used to fit the BCSD method.
+
+      target_da: The unfiltered target data for fitting the BCSD method.
+      method: The method to use for quantile mapping.
+      multiplicative: Whether to use multiplicative correction (e.g. for precipitation variables).
+      window_size: The size of the window used to compute the climatology statistics.
+    Returns:
+      The BCSD-downscaled data as an xarray DataArray.
+    """
+    # compute the quantile corresponding to the threshold in the high-res data for each location
+    target_threshold = 0.1 / (
+        24 * 60 * 60
+    )  # 0.1 mm/day wet threshold for precipitation
+
+    # thresh_q = (hr_pr <= threshold).mean(dim=["time", "ensemble_member"]) # simpler but incorrect? guess at quantiles for each location
+    thresh_q = (
+        xr.apply_ufunc(
+            scipy.stats.percentileofscore,
+            target_da.stack(ex=["time", "ensemble_member"]),
+            target_threshold,
+            input_core_dims=[["ex"], []],
+            vectorize=True,
+        )
+        / 100
+    )
+
+    # convert quantiles to the corresponding threshold in the low-res data
+    bcthresh = xr.apply_ufunc(
+        np.quantile,
+        lr_da,
+        thresh_q,
+        input_core_dims=[["time", "ensemble_member"], []],
+        vectorize=True,
+    )
+
+    # exclude dry days based on bias corrected threshold for the low-res data
+    # to ensure same proportion of days are dry for each location in high-res and low-res data
+    source = source.where(source >= bcthresh)
+    lr_da = lr_da.where(lr_da >= bcthresh)
+    target_da = target_da.where(target_da >= target_threshold)
+
+    # square root transform the wet-day data to make it more Gaussian-like
+    source = np.pow(source, 1 / 2)
+    lr_da = np.pow(lr_da, 1 / 2)
+    target_da = np.pow(target_da, 1 / 2)
+
+    bcsd_da = _bcsd_on_chunks(
+        source=source,
+        lr_da=lr_da,
+        target_da=target_da,
+        window_size=window_size,
+    )
+    # square the data to reverse the square root transform.
+    bcsd_da = np.pow(bcsd_da, 2)
+
+    # re-add any dry days as zeros
+    bcsd_da.fillna(0)
+
+    return bcsd_da
