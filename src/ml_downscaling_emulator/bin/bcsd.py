@@ -141,20 +141,13 @@ def bcsd(
     logger.info(f"Loading low-res and target {variable}.")
     lr_da = train_ds[f"lin{variable}"]
     target_da = train_ds[f"target_{variable}"]
-
-    logger.info(f"Low-pass filtering target {variable}.")
-    filtered_da = _low_pass_filter(
-        target_da.to_dataset(),
-        scale=(60.0 / 8.8) / 2.0,
-        spatial_dims=("grid_longitude", "grid_latitude"),
-    )[f"target_{variable}"]
+    source_da = eval_ds[f"lin{variable}"]
 
     typer.echo("Running BCSD...")
 
     bcsd_da = _bcsd_on_chunks(
-        source=eval_ds[f"lin{variable}"],
+        source=source_da,
         lr_da=lr_da,
-        filtered_da=filtered_da,
         target_da=target_da,
         window_size=window_size,
     )
@@ -185,7 +178,6 @@ def bcsd(
 def _bcsd_on_chunks(
     source: xr.DataArray,
     lr_da: xr.DataArray,
-    filtered_da: xr.DataArray,
     target_da: xr.DataArray,
     method: str = "gaussian",
     multiplicative: bool = True,
@@ -196,7 +188,7 @@ def _bcsd_on_chunks(
     Args:
       source: The source data to be processed with the BCSD method.
       lr_da: The low-resolution data used to fit the BCSD method.
-      filtered_da: The spatially filtered target data for fitting the BCSD method.
+
       target_da: The unfiltered target data for fitting the BCSD method.
       method: The method to use for quantile mapping.
       multiplicative: Whether to use multiplicative correction (e.g. for precipitation variables).
@@ -204,6 +196,15 @@ def _bcsd_on_chunks(
     Returns:
       The BCSD-downscaled data as an xarray DataArray.
     """
+
+    logger.info(f"Low-pass filtering target data.")
+    # Compute the spatially filtered target data for fitting the BCSD method.
+    filtered_da = _low_pass_filter(
+        target_da,
+        scale=(60.0 / 8.8) / 2.0,
+        spatial_dims=("grid_longitude", "grid_latitude"),
+    )
+
     sel = dict(
         dayofyear=source["time"].dt.dayofyear,
         drop=True,
@@ -252,7 +253,7 @@ def _bcsd_on_chunks(
 
 
 def _low_pass_filter(
-    source: xr.Dataset,
+    source: xr.DataArray,
     *,
     scale: float = (60.0 / 8.8)
     / 2.0,  # default is half the scale factor from 60km input to 8.8km target
@@ -273,7 +274,7 @@ def _low_pass_filter(
     """
     # Ordered dimensions of the source dataset can be fetched from a data_var.
     # Dataset dimensions are not guaranteed to be ordered.
-    ordered_dims = source[list(source.data_vars)[0]].dims
+    ordered_dims = source.dims
     # We only filter the spatial dimensions.
     scales = tuple(scale * float(dim in spatial_dims) for dim in ordered_dims)
 
