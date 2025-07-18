@@ -55,7 +55,7 @@ def bcsd(
     variable: str = "pr",
     split: str = "test",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
-    window_size: int = 61,
+    window_size: int = 3,
     version="v1",
 ):
     r"""Script to perform downscaling with the time-aligned BCSD method.
