@@ -20,11 +20,11 @@
 
 
 import logging
-import numpy as np
 from pathlib import Path
-from typing import Callable, Union
 import typer
 import xarray as xr
+
+from ml_downscaling_emulator.statistical_downscaling import compute_daily_stat
 
 logging.basicConfig(
     level=logging.INFO,
@@ -77,76 +77,3 @@ def std(
     typer.echo(f"Saving std to {output_path}...")
     output_ds[variable].encoding.update(zlib=True, complevel=5)
     output_ds.to_netcdf(output_path)
-
-
-def create_window_weights(window_size: int) -> xr.DataArray:
-    """Create linearly decaying window weights."""
-    assert window_size % 2 == 1, "Window size must be odd."
-    half_window_size = window_size // 2
-    window_weights = np.concatenate(
-        [
-            np.linspace(0, 1, half_window_size + 1),
-            np.linspace(1, 0, half_window_size + 1)[1:],
-        ]
-    )
-    window_weights = window_weights / window_weights.mean()
-    window_weights = xr.DataArray(window_weights, dims=["window"])
-    return window_weights
-
-
-def replace_time_with_doy(ds: xr.Dataset) -> xr.Dataset:
-    """Replace time coordinate with days of year."""
-    return ds.assign_coords({"time": ds.time.dt.dayofyear}).rename(
-        {"time": "dayofyear"}
-    )
-
-
-def compute_rolling_stat(
-    ds: xr.Dataset,
-    window_weights: xr.DataArray,
-    stat_fn: Union[str, Callable[..., xr.Dataset]] = "mean",
-) -> xr.Dataset:
-    """Compute rolling climatology."""
-    window_size = len(window_weights)
-    half_window_size = window_size // 2  # For padding
-    # Stack years
-    stacked = xr.concat(
-        [
-            replace_time_with_doy(ds.sel(time=str(y)))
-            for y in np.unique(ds.time.dt.year)
-        ],
-        dim="year",
-    )
-    # Fill gap day (366) with values from previous day 365
-    # stacked = stacked.fillna(stacked.sel(dayofyear=365))
-    # Pad edges for perioding window
-    stacked = stacked.pad(pad_width={"dayofyear": half_window_size}, mode="wrap")
-    # Weighted rolling mean
-    stacked = stacked.rolling(dayofyear=window_size, center=True).construct("window")
-    if stat_fn == "mean":
-        rolling_stat = stacked.weighted(window_weights).mean(dim=("window", "year"))
-    elif stat_fn == "std":
-        rolling_stat = stacked.weighted(window_weights).std(dim=("window", "year"))
-    else:
-        rolling_stat = stat_fn(stacked, weights=window_weights, dim=("window", "year"))
-    # Remove edges
-    rolling_stat = rolling_stat.isel(
-        dayofyear=slice(half_window_size, -half_window_size)
-    )
-    return rolling_stat
-
-
-def compute_daily_stat(
-    ds: xr.Dataset,
-    window_size: int,
-    # clim_years: slice,
-    stat_fn: Union[str, Callable[..., xr.Dataset]] = "mean",
-) -> xr.Dataset:
-    """Compute daily average climatology with running window."""
-    # NOTE: Loading seems to be necessary, otherwise computation takes forever
-    # Will be converted to xarray-beam pipeline anyway
-    ds = ds.load()
-
-    window_weights = create_window_weights(window_size)
-    daily_rolling_clim = compute_rolling_stat(ds, window_weights, stat_fn)
-    return daily_rolling_clim
