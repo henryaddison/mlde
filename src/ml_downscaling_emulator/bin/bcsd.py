@@ -50,7 +50,7 @@ def bcsd(
     dataset: str,
     train_dataset: str,
     variable: str = "pr",
-    split: str = "test",
+    split: str = "val",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
     window_size: int = 3,
     version="v1",
