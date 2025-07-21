@@ -171,10 +171,10 @@ def bcsd2(
 
     # exclude dry days based on bias corrected threshold for the low-res data
     # to ensure same proportion of days are dry for each location in high-res and low-res data
-    source = source.where(source >= bcthresh)
+    source_wet_dry_mask = source >= bcthresh
+    source = source.where(source_wet_dry_mask)
     lr_da = lr_da.where(lr_da >= bcthresh)
-    target_wet_dry_mask = target_da >= target_threshold
-    target_da = target_da.where(target_wet_dry_mask)
+    target_da = target_da.where(target_da >= target_threshold)
 
     # square root transform the wet-day data to make it more Gaussian-like
     source = np.power(source, 1 / 2)
@@ -191,7 +191,7 @@ def bcsd2(
     bcsd_da = np.power(bcsd_da, 2)
 
     # re-add any dry days as zeros
-    bcsd_da = bcsd_da.where(target_wet_dry_mask, other=0)
+    bcsd_da = bcsd_da.where(source_wet_dry_mask, other=0)
 
     return bcsd_da
 
