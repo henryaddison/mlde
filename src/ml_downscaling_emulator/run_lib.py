@@ -38,6 +38,7 @@ from .models.ema import ExponentialMovingAverage
 from . import likelihood
 from . import sde_lib
 from absl import flags
+from knockknock import slack_sender
 import torch
 import torchvision
 from tqdm import tqdm
@@ -74,7 +75,7 @@ def val_loss(config, eval_dl, eval_step_fn, state):
 
   return val_set_loss
 
-
+@slack_sender(webhook_url=os.getenv("KK_SLACK_WH_URL"), channel="general")
 @Timer(name="train", text="{name}: {minutes:.1f} minutes", logger=logging.info)
 def train(config, workdir):
   """Runs the training pipeline.
