@@ -14,15 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 """Training"""
 
-import ml_downscaling_emulator.run_lib as run_lib
-from absl import app
-from absl import flags
-from ml_collections.config_flags import config_flags
-import logging
-import os
 from dotenv import load_dotenv
+
+load_dotenv()  # make sure to take environment variables from .env before importing other modules
+
+import ml_downscaling_emulator.run_lib as run_lib  # noqa: E402
+from absl import app  # noqa: E402
+from absl import flags  # noqa: E402
+from ml_collections.config_flags import config_flags  # noqa: E402
+import logging  # noqa: E402
+import os  # noqa: E402
 
 FLAGS = flags.FLAGS
 
@@ -35,7 +39,6 @@ flags.mark_flags_as_required(["workdir", "config", "mode"])
 
 
 def main(argv):
-    load_dotenv()  # take environment variables from .env
     if FLAGS.mode == "train":
         # Create the working directory
         os.makedirs(FLAGS.workdir, exist_ok=True)
