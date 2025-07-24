@@ -26,8 +26,6 @@ from dotenv import load_dotenv
 
 from knockknock import slack_sender
 
-load_dotenv()  # take environment variables from .env
-
 FLAGS = flags.FLAGS
 
 config_flags.DEFINE_config_file(
@@ -40,6 +38,7 @@ flags.mark_flags_as_required(["workdir", "config", "mode"])
 
 @slack_sender(webhook_url=os.getenv("KK_SLACK_WH_URL"), channel="general")
 def main(argv):
+    load_dotenv()  # take environment variables from .env
     if FLAGS.mode == "train":
         # Create the working directory
         os.makedirs(FLAGS.workdir, exist_ok=True)
