@@ -101,7 +101,7 @@ def filter(
         ensemble_member=ensemble_member,
     )
 
-    logger.debug(f"Found for filtering: {samples_filepaths_to_filter}")
+    logger.info(f"Found for filtering: {samples_filepaths_to_filter}")
     for sample_filepath in samples_glob(samples_filepaths_to_filter):
         logger.debug(f"Working on {sample_filepath}")
         samples_ds = xr.open_dataset(sample_filepath)
