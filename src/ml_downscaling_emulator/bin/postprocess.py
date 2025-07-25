@@ -12,11 +12,10 @@ from mlde_utils.training.dataset import open_raw_dataset_split
 from ml_downscaling_emulator.postprocess import xrqm, to_gcm_domain
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=os.environ.get("LOG_LEVEL", "INFO").upper(),
     format="%(levelname)s - %(filename)s - %(asctime)s - %(message)s",
 )
 logger = logging.getLogger()
-logger.setLevel("INFO")
 
 app = typer.Typer()
 
@@ -76,7 +75,7 @@ def filter(
     dataset: str = typer.Option(...),
     time_period: str = typer.Option(...),
     checkpoint: str = typer.Option(...),
-    input_xfm: str = "stan",
+    input_xfm: str = typer.Option(...),
     split: str = "val",
     ensemble_member: str = typer.Option(...),
 ):
