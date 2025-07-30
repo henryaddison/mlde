@@ -16,6 +16,10 @@ def get_default_configs():
   training.reduce_mean = False
   training.random_crop_size = 0
 
+  # evaluation
+  config.eval = evaluate = ml_collections.ConfigDict()
+  evaluate.batch_size = 128
+
   # data
   config.data = data = ml_collections.ConfigDict()
   data.dataset = 'UKCP_Local'
