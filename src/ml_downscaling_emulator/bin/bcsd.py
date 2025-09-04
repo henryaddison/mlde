@@ -122,7 +122,7 @@ def bcsd(
     ```
     """
 
-    if coarse_train_dataset is not None:
+    if coarse_train_dataset is None:
         coarse_train_dataset = train_dataset
 
     output_dirpath = samples_path(
