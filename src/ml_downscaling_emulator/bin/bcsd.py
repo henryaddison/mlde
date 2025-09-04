@@ -49,7 +49,7 @@ def bcsd(
     workdir: Path,
     dataset: str,
     train_dataset: str,
-    coarse_train_dataset: str = None,
+    coarse_train_dataset: str = typer.Argument(None),
     variable: str = "pr",
     split: str = "val",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
