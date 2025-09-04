@@ -49,6 +49,7 @@ def bcsd(
     workdir: Path,
     dataset: str,
     train_dataset: str,
+    coarse_train_dataset: str = None,
     variable: str = "pr",
     split: str = "val",
     ensemble_member: str = DEFAULT_ENSEMBLE_MEMBER,
@@ -123,17 +124,22 @@ def bcsd(
     ```
     """
 
+    if coarse_train_dataset is not None:
+        coarse_train_dataset = train_dataset
+
     output_dirpath = samples_path(
         workdir=workdir,
         checkpoint=f"epoch-0",
         dataset=dataset,
-        input_xfm=f"{train_dataset}-bcsd",
+        input_xfm=f"{coarse_train_dataset}-{train_dataset}-bcsd",
         split=split,
         ensemble_member=ensemble_member,
     )
     os.makedirs(output_dirpath, exist_ok=True)
 
     train_ds = open_raw_dataset_split(train_dataset, "train")
+
+    coarse_train_ds = open_raw_dataset_split(coarse_train_dataset, "train")
 
     eval_ds = open_raw_dataset_split(dataset, split).sel(
         ensemble_member=[ensemble_member]
@@ -145,27 +151,38 @@ def bcsd(
                 return tp_key
         raise RuntimeError(f"No time period for {x}")
 
-    time_period_coord_values = xr.apply_ufunc(
+    train_time_period_coord_values = xr.apply_ufunc(
         tp_from_time, train_ds["time"], input_core_dims=None, vectorize=True
     )
     train_ds = train_ds.assign_coords(
-        time_period=("time", time_period_coord_values.data)
+        time_period=("time", train_time_period_coord_values.data)
     )
 
-    time_period_coord_values = xr.apply_ufunc(
+    coarse_train_time_period_coord_values = xr.apply_ufunc(
+        tp_from_time, coarse_train_ds["time"], input_core_dims=None, vectorize=True
+    )
+    coarse_train_ds = coarse_train_ds.assign_coords(
+        time_period=("time", coarse_train_time_period_coord_values.data)
+    )
+
+    eval_time_period_coord_values = xr.apply_ufunc(
         tp_from_time, eval_ds["time"], input_core_dims=None, vectorize=True
     )
-    eval_ds = eval_ds.assign_coords(time_period=("time", time_period_coord_values.data))
+    eval_ds = eval_ds.assign_coords(
+        time_period=("time", eval_time_period_coord_values.data)
+    )
 
     xr_samples = []
 
-    for tp, tp_eval_ds in eval_ds.groupby("time_period"):
-        tp_train_ds = train_ds.where(train_ds["time_period"] == tp, drop=True)
+    logger.info(f"Selecting low-res and target {variable}.")
+    lr_da = coarse_train_ds[f"lin{variable}"]
+    target_da = train_ds[f"target_{variable}"]
 
-        logger.info(f"Loading low-res and target {variable}.")
-        lr_da = tp_train_ds[f"lin{variable}"]
-        target_da = tp_train_ds[f"target_{variable}"]
-        source_da = tp_eval_ds[f"lin{variable}"]
+    for tp, tp_eval_ds in eval_ds.groupby("time_period"):
+        logger.info(f"Selecting variables for time period: {tp}")
+        tp_target_da = target_da.where(target_da["time_period"] == tp, drop=True)
+        tp_lr_da = lr_da.where(lr_da["time_period"] == tp, drop=True)
+        tp_source_da = tp_eval_ds[f"lin{variable}"]
 
         typer.echo(f"Running BCSD for {tp}...")
 
@@ -179,9 +196,9 @@ def bcsd(
             )
 
         bcsd_da = bcsd_func(
-            source=source_da,
-            lr_da=lr_da,
-            target_da=target_da,
+            source=tp_source_da,
+            lr_da=tp_lr_da,
+            target_da=tp_target_da,
             window_size=window_size,
         )
 
