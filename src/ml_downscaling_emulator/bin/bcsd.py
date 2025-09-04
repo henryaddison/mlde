@@ -223,7 +223,7 @@ def bcsd(
             )
         )
 
-    xr_samples = xr.concat(xr_samples, dim="time")
+    xr_samples = xr.concat(xr_samples, dim="time").sortby("time")
 
     output_filepath = os.path.join(output_dirpath, f"predictions-{shortuuid.uuid()}.nc")
     logger.info(f"Saving BCSD predictions to {output_filepath}")
