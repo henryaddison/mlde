@@ -106,14 +106,16 @@ def bcsd(
     SPLIT=<split of dataset to downscale, e.g. "test">
     ENSEMBLE_MEMBER=<ensemble member to downscale, e.g. "01">
 
-    TRAIN_DATASET=<name of dataset to fit BCSD method>
+    TRAIN_DATASET=<name of dataset to with high resolution variable to fit BCSD method>
+
+    COARSE_TRAIN_DATASET=<name of dataset to with low resolution variable to fit BCSD method>
 
     VARIABLE=<variable to downscale, e.g. "pr">
 
     WINDOW_SIZE=<size of the window used to compute the climatology statistics, e.g. 61>
 
     mlde bcsd bcsd \
-    ${WORKDIR} ${DATASET} ${TRAIN_DATASET} \
+    ${WORKDIR} ${DATASET} ${TRAIN_DATASET} ${COARSE_TRAIN_DATASET} \
     --split=${SPLIT} \
     --ensemble_member=${ENSEMBLE_MEMBER} \
     --variable=${VARIABLE} \
