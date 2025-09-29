@@ -98,8 +98,10 @@ def main(
     typer.echo("model size: {:.3f}MB".format(size_all_mb))
 
     torchinfo.summary(
-        score_model, depth=depth
-    )  # , col_names=["input_size", "output_size",], input_size=[(16, 1, 64, 64), (16, 13, 64, 64), (1,)])
+        score_model,
+        depth=depth,
+        # col_names=["input_size", "output_size",], input_size=[(16, 1, 64, 64), (16, 13, 64, 64), (1,)],
+    )
 
 
 if __name__ == "__main__":
