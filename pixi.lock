@@ -4392,7 +4392,7 @@ packages:
 - pypi: ./
   name: ml-downscaling-emulator
   version: 0.3.0
-  sha256: b53609fffdbb94046f8f35bdced0d6875023c6cd92a7f4802fa32356ca02e2b0
+  sha256: 91a7b62fc11fe3aaa43659949bb2e01ebe3728567e13f306eff9d97e80e76ac7
   requires_dist:
   - flufl-lock==7.1.1
   - mlde-utils==0.2.0

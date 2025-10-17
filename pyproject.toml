@@ -75,7 +75,7 @@ python = { version = "~=3.10" }
 python-dotenv = { version = "==1.0.1", build = "pyhd8ed1ab_0" }
 shortuuid = { version = "==1.0.11", build = "pyhd8ed1ab_0" }
 tensorboard = { version = "==2.11.0", build = "pyhd8ed1ab_0" }
-typer = { version = "==0.7.0", build = "pyhd8ed1ab_0" }
+typer = { version = "*"}
 wandb = { version = "*" }
 xarray = { version = "==2022.12.0", build = "pyhd8ed1ab_0" }
 
