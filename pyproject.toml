@@ -81,8 +81,8 @@ xarray = { version = "==2022.12.0", build = "pyhd8ed1ab_0" }
 
 [tool.pixi.pypi-dependencies]
 ml-downscaling-emulator = { path = ".", editable = true }
-torch = { version = "==2.7.1", index = "https://download.pytorch.org/whl/cu128" }
-torchvision = { version = "==0.22.1", index = "https://download.pytorch.org/whl/cu128" }
+torch = { version = "~=2.9", index = "https://download.pytorch.org/whl/cu128" }
+torchvision = { version = "~=0.24", index = "https://download.pytorch.org/whl/cu128" }
 
 [tool.pixi.feature.lint.dependencies]
 python = { version = "~=3.10" }
