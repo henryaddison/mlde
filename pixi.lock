@@ -4391,8 +4391,8 @@ packages:
   timestamp: 1664451756771
 - pypi: ./
   name: ml-downscaling-emulator
-  version: 0.3.0
-  sha256: 91a7b62fc11fe3aaa43659949bb2e01ebe3728567e13f306eff9d97e80e76ac7
+  version: 0.4.0a1
+  sha256: 4d60deb90c8e3b541df5beedee749bfd4354f3223918403d28e0ea092d00250a
   requires_dist:
   - flufl-lock==7.1.1
   - mlde-utils==0.2.0
