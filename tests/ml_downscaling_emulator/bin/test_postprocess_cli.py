@@ -15,6 +15,7 @@ def test_filter(tmp_path, samples_file):
     checkpoint = "epoch-1"
     ensemble_member = "01"
     dataset = "test-dataset"
+    input_xfm = "stan"
 
     result = runner.invoke(
         app,
@@ -28,6 +29,8 @@ def test_filter(tmp_path, samples_file):
             time_period,
             "--checkpoint",
             checkpoint,
+            "--input-xfm",
+            input_xfm,
             "--ensemble-member",
             ensemble_member,
         ],
