@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ml_downscaling_emulator"
-version = "0.2.2a1"
+version = "0.3.0a1"
 authors = [
   { name="Henry Addison", email="henry.addison@bristol.ac.uk" },
 ]
