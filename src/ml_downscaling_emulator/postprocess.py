@@ -1,4 +1,3 @@
-from importlib.resources import files
 from typing import Callable
 import numpy as np
 import xarray as xr
@@ -78,8 +77,8 @@ def xrqm(
 
 
 def to_gcm_domain(ds: xr.Dataset):
-    target_grid_filepath = files("mlde_utils.data").joinpath(
-        "target_grids/60km/global/pr/moose_grid.nc"
+    target_grid_filepath = (
+        "../mlde-data/src/mlde_data/actions/target_grids/60km/global/pr/moose_grid.nc"
     )
     ds = Remapcon(target_grid_filepath).run(ds)
     ds = ShiftLonBreak().run(ds)

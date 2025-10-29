@@ -9,7 +9,7 @@ dataset="debug-sample-mv"
 workdir="output/test/${sde}/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/configs/${sde}/${config_name}.py"
 
-loc_spec_channels=2
+loc_spec_channels=0
 train_batch_size=2
 epoch=2
 

@@ -32,7 +32,7 @@ def get_config():
 
   # data
   data = config.data
-  data.dataset_name = 'debug-sample'
+  data.dataset_name = 'demo-ccpm_pr'
   data.time_inputs=True
 
   # model
