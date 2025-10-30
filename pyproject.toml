@@ -66,7 +66,6 @@ cuda = { version = "==12.8" }
 dask = { version = "==2022.12.1", build = "pyhd8ed1ab_0" }
 filelock = { version = "==3.8.2", build = "pyhd8ed1ab_0" }
 gxx = { version = "~=9" }
-knockknock = { version = "==0.1.8.1", build = "py_0" }
 ml-collections = { version = "==0.1.1", build = "pyhd8ed1ab_0" }
 netcdf4 = { version = "*" }
 ninja = { version = "==1.11.0", build = "h924138e_0" }
@@ -76,7 +75,6 @@ python-dotenv = { version = "==1.0.1", build = "pyhd8ed1ab_0" }
 shortuuid = { version = "==1.0.11", build = "pyhd8ed1ab_0" }
 tensorboard = { version = "==2.11.0", build = "pyhd8ed1ab_0" }
 typer = { version = "*"}
-wandb = { version = "*" }
 xarray = { version = "==2022.12.0", build = "pyhd8ed1ab_0" }
 
 [tool.pixi.pypi-dependencies]

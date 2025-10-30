@@ -8,7 +8,6 @@ from pathlib import Path
 
 from codetiming import Timer
 from dotenv import load_dotenv
-from knockknock import slack_sender
 from ml_collections import config_dict
 import shortuuid
 import torch
@@ -215,7 +214,6 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
 
 @app.command()
 @Timer(name="sample", text="{name}: {minutes:.1f} minutes", logger=logger.info)
-@slack_sender(webhook_url=os.getenv("KK_SLACK_WH_URL"), channel="general")
 def main(
     workdir: Path,
     dataset: str = typer.Option(...),

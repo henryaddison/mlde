@@ -1,6 +1,5 @@
 from codetiming import Timer
 import logging
-from knockknock import slack_sender
 import os
 from pathlib import Path
 import shortuuid
@@ -71,7 +70,6 @@ def _sample_id(variable: str, eval_ds: xr.Dataset) -> xr.Dataset:
 
 @app.command()
 @Timer(name="sample", text="{name}: {minutes:.1f} minutes", logger=logging.info)
-@slack_sender(webhook_url=os.getenv("KK_SLACK_WH_URL"), channel="general")
 def as_input(
     workdir: Path,
     dataset: str = typer.Option(...),

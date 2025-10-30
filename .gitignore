@@ -5,7 +5,6 @@ src/ml_downscaling_emulator/unet
 checkpoints/
 mlruns/
 runs/
-wandb/
 
 # Slurm job output
 slurm-*.out
