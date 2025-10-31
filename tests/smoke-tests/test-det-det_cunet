@@ -3,18 +3,20 @@
 set -euo pipefail
 
 config_name="ukcp_local_pr_plain_unet_debug"
+dataset="demo-ccpm_pr"
 
 workdir="output/test/deterministic/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/configs/deterministic/${config_name}.py"
 
-loc_spec_channels=2
+loc_spec_channels=0
+train_batch_size=100
 
 rm -rf ${workdir}
-EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.model.loc_spec_channels=${loc_spec_channels}
+EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.model.loc_spec_channels=${loc_spec_channels} --config.training.batch_size=${train_batch_size}
 
 num_samples=2
 eval_batch_size=32
 checkpoint="epoch_2"
 
 rm -rf "${workdir}/samples/${checkpoint}"
-python bin/predict.py ${workdir} --dataset debug-sample --checkpoint ${checkpoint} --batch-size ${eval_batch_size} --num-samples ${num_samples} --ensemble-member 01
+python bin/predict.py ${workdir} --dataset ${dataset} --checkpoint ${checkpoint} --batch-size ${eval_batch_size} --num-samples ${num_samples} --ensemble-member 01
