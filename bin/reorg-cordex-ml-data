@@ -1,0 +1,66 @@
+#! /usr/bin/env bash
+
+# set -euo pipefail
+
+# Training data
+cd $DATA_PATH
+pwd
+for domain in ALPS_domain SA_domain NZ_domain; do
+  for framework in perfect; do
+    for experiment in Emulator_hist_future ESD_pseudo_reality; do
+      if [ "${experiment}" = "Emulator_hist_future" ]; then
+          training_period="1961-1980_2080-2099"
+      else
+          training_period="1961-1980"
+      fi
+
+      if [ "${domain}" = "ALPS_domain" ]; then
+        gcm_name="CNRM-CM5"
+      elif [ "${domain}" = "SA_domain" ]; then
+        gcm_name="ACCESS-CM2"
+      elif [ "${domain}" = "NZ_domain" ]; then
+        gcm_name="ACCESS-CM2"
+      fi
+
+
+      new_dir=${domain}-${experiment}-${gcm_name/-/}-${framework}
+      mkdir -p ${new_dir}/train/predictors
+      mkdir -p ${new_dir}/train/target
+
+      mv ${domain}/train/${experiment}/predictors/${gcm_name}_${training_period}.nc ${new_dir}/train/predictors/Variable_fields.nc
+      mv ${domain}/train/${experiment}/predictors/Static_fields.nc ${new_dir}/train/predictors/Static_fields.nc
+      mv ${domain}/train/${experiment}/target/pr_tasmax_${gcm_name}_${training_period}.nc ${new_dir}/train/target/pr_tasmax.nc
+    done
+  done
+done
+
+# Test data
+
+for domain in ALPS_domain SA_domain NZ_domain; do
+  for framework in perfect imperfect; do
+    for experiment in historical mid_century end_century; do
+      if [ "${experiment}" = "historical" ]; then
+          period="1981-2000"
+      elif [ "${experiment}" = "mid_century" ]; then
+          period="2041-2060"
+      elif [ "${experiment}" = "end_century" ]; then
+          period="2080-2099"
+      fi
+
+      if [ "${domain}" = "ALPS_domain" ]; then
+        gcm_names=(CNRM-CM5 MPI-ESM-LR)
+      elif [ "${domain}" = "SA_domain" ]; then
+        gcm_names=(ACCESS-CM2 NorESM2-MM)
+      elif [ "${domain}" = "NZ_domain" ]; then
+        gcm_names=(ACCESS-CM2 EC-Earth3)
+      fi
+      for gcm_name in ${gcm_names[@]} ; do
+        new_dir=${domain}-${experiment}-${gcm_name/-/}-${framework}
+        mkdir -p ${new_dir}/test/predictors
+        mkdir -p ${new_dir}/test/target
+
+        mv ${domain}/test/${experiment}/predictors/${framework}/${gcm_name}_${period}.nc ${new_dir}/test/predictors/Variable_fields.nc
+      done
+    done
+  done
+done
