@@ -25,7 +25,8 @@ import functools
 import torch
 import numpy as np
 
-from mlde_utils.training.dataset import get_variables
+# from mlde_utils.training.dataset import get_variables
+from ml_downscaling_emulator.cordex_ml_data import get_variables
 
 ResnetBlockDDPM = layerspp.ResnetBlockDDPMpp
 ResnetBlockBigGAN = layerspp.ResnetBlockBigGANpp

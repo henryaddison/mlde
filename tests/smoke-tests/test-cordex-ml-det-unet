@@ -1,0 +1,24 @@
+#! /usr/bin/env bash
+
+set -euo pipefail
+
+config_name="cordex_ml_pr_sa_unet"
+
+workdir="output/test/deterministic/${config_name}/test-run"
+config_path="src/ml_downscaling_emulator/configs/deterministic/${config_name}.py"
+
+loc_spec_channels=0
+train_batch_size=100
+epoch=2
+
+rm -rf ${workdir}
+EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.model.loc_spec_channels=${loc_spec_channels} --config.training.batch_size=${train_batch_size} --config.training.snapshot_freq=5 --config.training.eval_freq=100 --config.training.log_freq=50 --config.training.n_epochs=${epoch}
+
+num_samples=2
+eval_batch_size=32
+checkpoint="epoch_2"
+dataset="SA_domain-historical-ACCESSCM2-perfect"
+xfm_dataset="SA_domain-ESD_pseudo_reality-ACCESSCM2-perfect"
+
+rm -rf "${workdir}/samples/${checkpoint}"
+python bin/predict.py ${workdir} --dataset ${dataset} --checkpoint ${checkpoint} --batch-size ${eval_batch_size} --num-samples ${num_samples} --split test --input-transform-dataset ${xfm_dataset}

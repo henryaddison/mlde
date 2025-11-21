@@ -45,7 +45,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from torch.utils.tensorboard import SummaryWriter
 from .utils import save_checkpoint, restore_checkpoint
 
-from ml_downscaling_emulator.data import get_dataloader
+from ml_downscaling_emulator.cordex_ml_data import get_dataloader, get_variables, get_transforms
 from mlde_utils import DatasetMetadata
 from ml_downscaling_emulator.training import log_epoch, track_run
 
@@ -63,6 +63,7 @@ def val_loss(config, eval_dl, eval_step_fn, state):
     # eval_cond_batch, eval_target_batch = next(iter(eval_dl))
     eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
+    eval_cond_batch = torch.nn.functional.interpolate(eval_cond_batch, size=eval_target_batch.shape[-2:], mode="nearest")
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
@@ -117,8 +118,41 @@ def train(config, workdir):
     ) as writer:
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
-    train_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, target_xfm_keys, transform_dir, batch_size=config.training.batch_size, split="train", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False)
-    eval_dl, _, _ = get_dataloader(config.data.dataset_name, config.data.dataset_name, config.data.dataset_name, config.data.input_transform_key, target_xfm_keys, transform_dir, batch_size=config.training.batch_size, split="val", ensemble_members=dataset_meta.ensemble_members(), include_time_inputs=config.data.time_inputs, evaluation=False, shuffle=False)
+
+    predictor_variables, target_variables = get_variables(config.data.dataset_name)
+
+    transform, target_transform = get_transforms(
+        config.data.dataset_name,
+        input_transform_key=config.data.input_transform_key,
+        target_transform_keys=target_xfm_keys,
+        predictor_variables=predictor_variables,
+        target_variables=target_variables,
+        transform_dir=transform_dir,
+    )
+
+    train_dl, _, _ = get_dataloader(
+      config.data.dataset_name,
+      predictor_variables=predictor_variables,
+      target_variables=target_variables,
+      transform=transform,
+      target_transform=target_transform,
+      split="train",
+      batch_size=config.training.batch_size,
+      shuffle=True,
+      training=True,
+    )
+
+    eval_dl, _, _ = get_dataloader(
+      config.data.dataset_name,
+      predictor_variables=predictor_variables,
+      target_variables=target_variables,
+      transform=transform,
+      target_transform=target_transform,
+      split="val",
+      batch_size=config.training.batch_size,
+      shuffle=False,
+      training=True,
+    )
 
     # Initialize model.
     score_model = mutils.create_model(config)
@@ -189,6 +223,7 @@ def train(config, workdir):
 
             target_batch = target_batch.to(config.device)
             cond_batch = cond_batch.to(config.device)
+            cond_batch = torch.nn.functional.interpolate(cond_batch, size=target_batch.shape[-2:], mode="nearest")
             # append any location-specific parameters
             cond_batch = state['location_params'](cond_batch)
 

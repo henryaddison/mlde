@@ -18,9 +18,10 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import xarray as xr
 import yaml
 
-from ml_downscaling_emulator.data import get_dataloader, np_samples_to_xr
+from ml_downscaling_emulator.cordex_ml_data import get_dataloader, np_samples_to_xr, open_raw_dataset_split, get_transforms
 from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
-from mlde_utils.training.dataset import get_variables
+# from mlde_utils.training.dataset import get_variables
+from ml_downscaling_emulator.cordex_ml_data import get_variables
 
 from ml_downscaling_emulator.losses import get_optimizer
 from ml_downscaling_emulator.models.ema import (
@@ -162,15 +163,20 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
     score_model = state["model"]
     location_params = state["location_params"]
 
-    cf_data_vars = {
-        key: eval_dl.dataset.ds.data_vars[key]
-        for key in [
-            "rotated_latitude_longitude",
-            "time_bnds",
-            "grid_latitude_bnds",
-            "grid_longitude_bnds",
-        ]
-    }
+    # infer dimensions, variable attributes and non-time coordinates and CF-related variables from training dataset
+    # TODO: what about when applying different regions than trained on? can't infer from training data and testing data may not have target coords
+    _, train_predictand_ds = open_raw_dataset_split(config.data.dataset_name, "train", [], target_vars, open_predictands=True)
+
+    target_dims = train_predictand_ds[target_vars[0]].dims
+
+    coords = {k:v for k,v in train_predictand_ds.coords.items() if k not in ["time"]}
+
+    cf_data_vars = { f"{dim}_bnds": train_predictand_ds.data_vars[f"{dim}_bnds"] for dim in target_dims if dim not in ["time"] and f"{dim}_bnds" in train_predictand_ds.data_vars }
+    if "grid_mapping" in train_predictand_ds.attrs:
+        grid_mapping = train_predictand_ds.attrs["grid_mapping"]
+        cf_data_vars[grid_mapping] = train_predictand_ds.data_vars[grid_mapping]
+
+    var_attrs = {var: train_predictand_ds[var].attrs for var in target_vars}
 
     xr_sample_batches = []
     with logging_redirect_tqdm():
@@ -179,11 +185,13 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
             desc=f"Sampling",
             unit=" timesteps",
         ) as pbar:
-            for cond_batch, _, time_batch in eval_dl:
+            for cond_batch, time_batch in eval_dl:
                 # append any location-specific parameters
+                cond_batch = torch.nn.functional.interpolate(cond_batch, size=[config.data.image_size, config.data.image_size], mode="nearest")
                 cond_batch = location_params(cond_batch)
 
-                coords = eval_dl.dataset.ds.sel(time=time_batch).coords
+                # TODO: get time_bnds too (as a data variable) if available
+                coords["time"] = eval_dl.dataset.predictor_da.sel(time=time_batch).coords["time"]
 
                 np_sample_batch = generate_np_sample_batch(
                     sampling_fn, score_model, config, cond_batch
@@ -193,6 +201,8 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
                     np_sample_batch,
                     target_transform,
                     target_vars,
+                    target_dims,
+                    var_attrs,
                     coords,
                     cf_data_vars,
                 )
@@ -274,20 +284,27 @@ def main(
         config.data.target_transform_overrides
     )
 
+    predictor_variables, target_variables = get_variables(dataset)
+
+    transform, target_transform = get_transforms(
+        config.data.dataset_name,
+        input_transform_key=config.data.input_transform_key,
+        target_transform_keys=target_xfm_keys,
+        predictor_variables=predictor_variables,
+        target_variables=target_variables,
+        transform_dir=transform_dir,
+    )
     # Data
     eval_dl, _, target_transform = get_dataloader(
-        dataset,
-        config.data.dataset_name,
-        config.data.input_transform_dataset,
-        config.data.input_transform_key,
-        target_xfm_keys,
-        transform_dir,
-        split=split,
-        ensemble_members=[ensemble_member],
-        include_time_inputs=config.data.time_inputs,
-        evaluation=True,
-        batch_size=config.eval.batch_size,
-        shuffle=False,
+      dataset,
+      predictor_variables=predictor_variables,
+      target_variables=target_variables,
+      transform=transform,
+      target_transform=target_transform,
+      split=split,
+      batch_size=config.eval.batch_size,
+      shuffle=False,
+      training=False,
     )
 
     ckpt_filename = os.path.join(workdir, "checkpoints", f"{checkpoint}.pth")
@@ -305,7 +322,7 @@ def main(
         logger.info(f"Saving samples to {output_filepath}...")
         for varname in target_vars:
             for prefix in ["pred_", "raw_pred_"]:
-                xr_samples[varname.replace("target_", prefix)].encoding.update(
+                xr_samples[f"{prefix}{varname}"].encoding.update(
                     zlib=True, complevel=5
                 )
         xr_samples.to_netcdf(output_filepath)
