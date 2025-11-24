@@ -19,7 +19,7 @@
 Config for simple U-Net on multivariate SA-domain ESD-experiment data used in a deterministic fashion.
 """
 
-from ml_downscaling_emulator.configs.deterministic.cordex_ml_defaults import get_configs as get_default_configs
+from ml_downscaling_emulator.configs.deterministic.cordex_ml_defaults import get_config as get_default_configs
 
 def get_config():
   config = get_default_configs()
