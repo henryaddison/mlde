@@ -1,6 +1,7 @@
 """Loading CORDEX ML data into PyTorch"""
 
 import cftime
+import cf_xarray
 import gc
 import numpy as np
 import os
@@ -149,7 +150,7 @@ def get_dataloader(
 
 class CordexMLDataset(Dataset):
     def __init__(self, predictor_ds, variables, target_variables):
-        self.predictor_da = predictor_ds[variables].transpose("time", "lat", "lon")
+        self.predictor_da = predictor_ds[variables].cf.transpose("T", "Y", "X")
 
         self.variables = variables
         self.target_variables = target_variables
@@ -172,7 +173,7 @@ class CordexMLTrainingDataset(CordexMLDataset):
     def __init__(self, predictor_ds, predictand_ds, variables, target_variables):
         super().__init__(predictor_ds, variables, target_variables)
 
-        self.predictand_da = predictand_ds[target_variables].transpose("time", "lat", "lon")
+        self.predictand_da = predictand_ds[target_variables].cf.transpose("T", "Y", "X")
 
     def __getitem__(self, idx):
         predictors, time = super().__getitem__(idx)
