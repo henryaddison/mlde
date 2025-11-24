@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ml_downscaling_emulator"
-version = "0.4.0a1"
+version = "0.4.0"
 authors = [
   { name="Henry Addison", email="henry.addison@bristol.ac.uk" },
 ]
@@ -57,6 +57,7 @@ lint = {features = ["lint"], no-default-feature = true}
 
 [tool.pixi.dependencies]
 cartopy = { version = "==0.22.0" }
+cdo = { version = "~=2" }
 protobuf = { version = "3.20.*" }
 absl-py = { version = "==1.3.0", build = "pyhd8ed1ab_0" }
 bottleneck = { version = "~=1"}
@@ -71,6 +72,7 @@ netcdf4 = { version = "*" }
 ninja = { version = "==1.11.0", build = "h924138e_0" }
 pint = { version = "==0.20.1", build = "pyhd8ed1ab_0" }
 python = { version = "~=3.10" }
+python-cdo = { version = "~=1" }
 python-dotenv = { version = "==1.0.1", build = "pyhd8ed1ab_0" }
 shortuuid = { version = "==1.0.11", build = "pyhd8ed1ab_0" }
 tensorboard = { version = "==2.11.0", build = "pyhd8ed1ab_0" }
