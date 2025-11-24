@@ -27,3 +27,5 @@ def get_config():
   # data
   data = config.data
   data.dataset_name = 'SA_domain-ESD_pseudo_reality-ACCESSCM2-perfect'
+
+  return config
