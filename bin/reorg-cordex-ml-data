@@ -2,9 +2,12 @@
 
 # set -euo pipefail
 
-# Training data
-cd $DATA_PATH
+data_path=$1
+
+cd $data_path
 pwd
+
+# Training data
 for domain in ALPS_domain SA_domain NZ_domain; do
   for framework in perfect; do
     for experiment in Emulator_hist_future ESD_pseudo_reality; do
