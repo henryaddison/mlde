@@ -15,10 +15,7 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Debug config for training a purely deterministic model.
-
-This is opposed to using a model ready for score-based denoising
-but training it in a deterministic fashion.
+"""Default config for simple U-Net on CORDEX-ML data used in a deterministic fashion.
 """
 
 from ml_downscaling_emulator.configs.deterministic.default_configs import get_default_configs
@@ -28,13 +25,12 @@ def get_config():
 
   # training
   training = config.training
-  training.n_epochs = 100
+  training.n_epochs = 200
   training.snapshot_freq = 20
   training.batch_size = 256
 
   # data
   data = config.data
-  data.dataset_name = 'SA_domain-ESD_pseudo_reality-ACCESSCM2-perfect'
   data.image_size = 128
   data.predictor_image_size = 16
   data.input_transform_key = "stan"
