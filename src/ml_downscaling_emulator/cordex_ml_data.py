@@ -42,8 +42,8 @@ SPLIT_YEARS = {
 DATA_PATH = Path(os.getenv('DATA_PATH'))
 
 def get_variables(_dataset_name):
-    predictor_variables = ["t_850", "z_850"]
-    target_variables = ["pr"]
+    predictor_variables = [f"{v}_{p}" for v in ["t", "u", "v", "z", "q"] for p in [500, 700, 850]]
+    target_variables = ["pr", "tasmax"]
     return predictor_variables, target_variables
 
 def open_raw_dataset_split(
