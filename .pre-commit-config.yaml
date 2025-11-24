@@ -12,7 +12,7 @@ repos:
     rev: 22.12.0
     hooks:
       - id: black
-        language_version: python3.9
+        language_version: python3.11
         exclude: ^src/ml_downscaling_emulator/(run_lib.py|sde_lib.py|likelihood.py|sampling.py|losses.py|models|op|configs)
   - repo: https://github.com/pycqa/flake8
     rev: '6.0.0'  # pick a git hash / tag to point to
