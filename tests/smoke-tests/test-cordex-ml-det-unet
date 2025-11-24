@@ -8,7 +8,7 @@ workdir="output/test/deterministic/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/configs/deterministic/${config_name}.py"
 
 loc_spec_channels=0
-train_batch_size=100
+train_batch_size=32
 epoch=2
 
 rm -rf ${workdir}
