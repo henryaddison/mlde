@@ -117,7 +117,7 @@ def get_transforms(
     return input_transform, target_transform
 
 def get_dataloader(
-    active_dataset_name,
+    dataset_name,
     predictor_variables,
     target_variables,
     transform,
@@ -128,10 +128,10 @@ def get_dataloader(
     training=True,
 ):
 
-    predictor_variables, target_variables = get_variables(active_dataset_name)
+    predictor_variables, target_variables = get_variables(dataset_name)
 
     predictor_ds, predictand_ds = open_raw_dataset_split(
-        active_dataset_name,
+        dataset_name,
         split,
         predictor_variables,
         target_variables,
