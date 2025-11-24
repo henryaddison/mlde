@@ -17,23 +17,12 @@ TIME_RANGE = (
     cftime.Datetime360Day(2080, 11, 30, 12, 0, 0, 0, has_year_zero=True),
 )
 
-TRAINING_PERIODS = {
-    'ESD_pseudo_reality': '1961-1980',
-    'Emulator_hist_future': '1961-1980_2080-2099',
-}
-
-GCM_NAME = {
-    "ALPS": "CNRM-CM5",
-    "NZ": "ACCESS-CM2",
-    "SA": "ACCESS-CM2",
-}
-
 SPLIT_YEARS = {
     'ESD_pseudo_reality': {
         "train": list(range(1961, 1975)),
         "val": list(range(1975, 1980+1)),
     },
-    "Emulator_hist_fut": {
+    "Emulator_hist_future": {
         "train": list(range(1961, 1980+1)) + list(range(2080, 2090)),
         "val": list(range(2090, 2099+1)),
     },
