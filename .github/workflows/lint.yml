@@ -10,12 +10,12 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
+          python-version: "3.14"
       - name: Black
         uses: psf/black@stable
         with:
-          version: "~= 22.0"
+          version: "== 25.1.0"
       - name: flake8 Lint
         uses: py-actions/flake8@v2
         with:
-          flake8-version: "6.0.0"
+          flake8-version: "7.3.0"
