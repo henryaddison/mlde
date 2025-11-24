@@ -1,7 +1,7 @@
 """Loading CORDEX ML data into PyTorch"""
 
 import cftime
-import cf_xarray
+import cf_xarray  # noqa: F401
 import gc
 import numpy as np
 import os
@@ -10,7 +10,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import xarray as xr
 
-from mlde_utils.training.dataset import get_dataset
 from mlde_utils.transforms import build_input_transform, build_target_transform
 
 TIME_RANGE = (
@@ -19,22 +18,26 @@ TIME_RANGE = (
 )
 
 SPLIT_YEARS = {
-    'ESD_pseudo_reality': {
+    "ESD_pseudo_reality": {
         "train": list(range(1961, 1975)),
-        "val": list(range(1975, 1980+1)),
+        "val": list(range(1975, 1980 + 1)),
     },
     "Emulator_hist_future": {
-        "train": list(range(1961, 1980+1)) + list(range(2080, 2090)),
-        "val": list(range(2090, 2099+1)),
+        "train": list(range(1961, 1980 + 1)) + list(range(2080, 2090)),
+        "val": list(range(2090, 2099 + 1)),
     },
 }
 
-DATA_PATH = Path(os.getenv('DATA_PATH'))
+DATA_PATH = Path(os.getenv("DATA_PATH"))
+
 
 def get_variables(_dataset_name):
-    predictor_variables = [f"{v}_{p}" for v in ["t", "u", "v", "z", "q"] for p in [500, 700, 850]]
+    predictor_variables = [
+        f"{v}_{p}" for v in ["t", "u", "v", "z", "q"] for p in [500, 700, 850]
+    ]
     target_variables = ["pr", "tasmax"]
     return predictor_variables, target_variables
+
 
 def open_raw_dataset_split(
     dataset_name,
@@ -58,7 +61,6 @@ def open_raw_dataset_split(
         predictand_filepath = experiment_path / "target" / "pr_tasmax.nc"
         predictand_ds = xr.open_dataset(predictand_filepath)
 
-
     if split in ["train", "val"]:
         split_years = SPLIT_YEARS[experiment][split]
 
@@ -74,6 +76,7 @@ def open_raw_dataset_split(
         predictand_ds = predictand_ds[target_variables]
 
     return predictor_ds, predictand_ds
+
 
 def get_transforms(
     dataset_name,
@@ -106,6 +109,7 @@ def get_transforms(
 
     return input_transform, target_transform
 
+
 def get_dataloader(
     dataset_name,
     predictor_variables,
@@ -132,15 +136,21 @@ def get_dataloader(
 
     if training:
         predictand_ds = target_transform.transform(predictand_ds)
-        pt_dataset = CordexMLTrainingDataset(predictor_ds, predictand_ds, predictor_variables, target_variables)
+        pt_dataset = CordexMLTrainingDataset(
+            predictor_ds, predictand_ds, predictor_variables, target_variables
+        )
     else:
-        pt_dataset = CordexMLDataset(predictor_ds, predictor_variables, target_variables)
+        pt_dataset = CordexMLDataset(
+            predictor_ds, predictor_variables, target_variables
+        )
 
     def custom_collate(batch):
         from torch.utils.data import default_collate
 
         return *default_collate([tuple(e[:-1]) for e in batch]), np.concatenate(
-            [e[-1] for e in batch])
+            [e[-1] for e in batch]
+        )
+
     data_loader = DataLoader(
         pt_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate
     )
@@ -161,7 +171,11 @@ class CordexMLDataset(Dataset):
     def __getitem__(self, idx):
         predictors = torch.tensor(
             # stack features before lat-lon (HW)
-            np.stack([self.predictor_da[var].isel(time=idx) for var in self.variables], axis=-3), dtype=torch.float32
+            np.stack(
+                [self.predictor_da[var].isel(time=idx) for var in self.variables],
+                axis=-3,
+            ),
+            dtype=torch.float32,
         )
 
         time = self.predictor_da.isel(time=idx)["time"].values.reshape(-1)
@@ -180,13 +194,22 @@ class CordexMLTrainingDataset(CordexMLDataset):
 
         predictands = torch.tensor(
             # stack features before lat-lon (HW)
-            np.stack([self.predictand_da[var].isel(time=idx) for var in self.target_variables], axis=-3), dtype=torch.float32
+            np.stack(
+                [
+                    self.predictand_da[var].isel(time=idx)
+                    for var in self.target_variables
+                ],
+                axis=-3,
+            ),
+            dtype=torch.float32,
         )
 
         return predictors, predictands, time
 
 
-def np_samples_to_xr(np_samples, target_transform, target_vars, dims, var_attrs, coords, cf_data_vars):
+def np_samples_to_xr(
+    np_samples, target_transform, target_vars, dims, var_attrs, coords, cf_data_vars
+):
     """
     Convert samples from a model in numpy format to an xarray Dataset, including inverting any transformation applied to the target variables before modelling.
     """
@@ -210,13 +233,11 @@ def np_samples_to_xr(np_samples, target_transform, target_vars, dims, var_attrs,
 
     samples_ds = target_transform.invert(
         xr.Dataset(data_vars=data_vars, coords=coords, attrs={})
-    ).rename(
-        {var: f"pred_{var}" for var in target_vars}
-    )
+    ).rename({var: f"pred_{var}" for var in target_vars})
 
     # Re-assign attributes as target_transform inversion removes them
     for var_idx, var in enumerate(target_vars):
-        samples_ds[f"pred_{var}"] = samples_ds[
-            f"pred_{var}"
-        ].assign_attrs(var_attrs[var])
+        samples_ds[f"pred_{var}"] = samples_ds[f"pred_{var}"].assign_attrs(
+            var_attrs[var]
+        )
     return samples_ds

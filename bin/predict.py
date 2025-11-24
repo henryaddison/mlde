@@ -18,8 +18,14 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 import xarray as xr
 import yaml
 
-from ml_downscaling_emulator.cordex_ml_data import get_dataloader, np_samples_to_xr, open_raw_dataset_split, get_transforms
+from ml_downscaling_emulator.cordex_ml_data import (
+    get_dataloader,
+    np_samples_to_xr,
+    open_raw_dataset_split,
+    get_transforms,
+)
 from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
+
 # from mlde_utils.training.dataset import get_variables
 from ml_downscaling_emulator.cordex_ml_data import get_variables
 
@@ -165,13 +171,19 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
 
     # infer dimensions, variable attributes and non-time coordinates and CF-related variables from training dataset
     # TODO: what about when applying different regions than trained on? can't infer from training data and testing data may not have target coords
-    _, train_predictand_ds = open_raw_dataset_split(config.data.dataset_name, "train", [], target_vars, open_predictands=True)
+    _, train_predictand_ds = open_raw_dataset_split(
+        config.data.dataset_name, "train", [], target_vars, open_predictands=True
+    )
 
     target_dims = train_predictand_ds[target_vars[0]].dims
 
-    coords = {k:v for k,v in train_predictand_ds.coords.items() if k not in ["time"]}
+    coords = {k: v for k, v in train_predictand_ds.coords.items() if k not in ["time"]}
 
-    cf_data_vars = { f"{dim}_bnds": train_predictand_ds.data_vars[f"{dim}_bnds"] for dim in target_dims if dim not in ["time"] and f"{dim}_bnds" in train_predictand_ds.data_vars }
+    cf_data_vars = {
+        f"{dim}_bnds": train_predictand_ds.data_vars[f"{dim}_bnds"]
+        for dim in target_dims
+        if dim not in ["time"] and f"{dim}_bnds" in train_predictand_ds.data_vars
+    }
     if "grid_mapping" in train_predictand_ds.attrs:
         grid_mapping = train_predictand_ds.attrs["grid_mapping"]
         cf_data_vars[grid_mapping] = train_predictand_ds.data_vars[grid_mapping]
@@ -187,11 +199,17 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
         ) as pbar:
             for cond_batch, time_batch in eval_dl:
                 # append any location-specific parameters
-                cond_batch = torch.nn.functional.interpolate(cond_batch, size=[config.data.image_size, config.data.image_size], mode="nearest")
+                cond_batch = torch.nn.functional.interpolate(
+                    cond_batch,
+                    size=[config.data.image_size, config.data.image_size],
+                    mode="nearest",
+                )
                 cond_batch = location_params(cond_batch)
 
                 # TODO: get time_bnds too (as a data variable) if available
-                coords["time"] = eval_dl.dataset.predictor_da.sel(time=time_batch).coords["time"]
+                coords["time"] = eval_dl.dataset.predictor_da.sel(
+                    time=time_batch
+                ).coords["time"]
 
                 np_sample_batch = generate_np_sample_batch(
                     sampling_fn, score_model, config, cond_batch
@@ -296,15 +314,15 @@ def main(
     )
     # Data
     eval_dl, _, target_transform = get_dataloader(
-      dataset,
-      predictor_variables=predictor_variables,
-      target_variables=target_variables,
-      transform=transform,
-      target_transform=target_transform,
-      split=split,
-      batch_size=config.eval.batch_size,
-      shuffle=False,
-      training=False,
+        dataset,
+        predictor_variables=predictor_variables,
+        target_variables=target_variables,
+        transform=transform,
+        target_transform=target_transform,
+        split=split,
+        batch_size=config.eval.batch_size,
+        shuffle=False,
+        training=False,
     )
 
     ckpt_filename = os.path.join(workdir, "checkpoints", f"{checkpoint}.pth")
@@ -322,9 +340,7 @@ def main(
         logger.info(f"Saving samples to {output_filepath}...")
         for varname in target_vars:
             for prefix in ["pred_", "raw_pred_"]:
-                xr_samples[f"{prefix}{varname}"].encoding.update(
-                    zlib=True, complevel=5
-                )
+                xr_samples[f"{prefix}{varname}"].encoding.update(zlib=True, complevel=5)
         xr_samples.to_netcdf(output_filepath)
 
 
