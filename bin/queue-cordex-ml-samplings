@@ -1,0 +1,49 @@
+#!/bin/bash
+# Queue prediction jobs for CORDEX-ML-Bench datasets
+
+
+set -euo pipefail
+
+domain="alps"
+for domain in alps sa nz; do
+for training_period in hist_fut esd; do
+
+
+  if [ "${domain}" = "alps" ]; then
+    gcm_names=(CNRM-CM5 MPI-ESM-LR)
+  elif [ "${domain}" = "sa" ]; then
+    gcm_names=(ACCESS-CM2 NorESM2-MM)
+  elif [ "${domain}" = "nz" ]; then
+    gcm_names=(ACCESS-CM2 EC-Earth3)
+  fi
+
+  training_gcm_name=${gcm_names[0]}
+
+
+  # val
+  for period in ESD_pseudo_reality Emulator_hist_future; do
+  for framework in perfect; do
+    workdir=/gws/nopw/j04/furflex/henrya/projects/cordex-ml-bench/workdirs/mlde/determinisitic/cordex_ml_mv_${training_period}_${domain}_unet/no_static_unet
+
+    dataset="${domain^^}_domain-${period}-${training_gcm_name}-${framework}"
+
+    ~/code/mlde-infrastructure/bin/jasmin/queue-mlde -g 1 -m 10G -- pixi run python bin/predict.py --checkpoint ${epoch} --num-samples 1 --dataset ${dataset} --split val  --batch-size 540 ${workdir};
+  done
+  done
+
+
+
+  # # test
+  for period in historical mid_century end_century; do
+  for framework in perfect imperfect; do
+  for gcnm_name in $gcm_names[@]; do
+    workdir=/gws/nopw/j04/furflex/henrya/projects/cordex-ml-bench/workdirs/mlde/determinisitic/cordex_ml_mv_${training_period}_${domain}_unet/no_static_unet
+
+    dataset="${domain^^}_domain-${period}-${gcm_name}-${framework}"
+
+    ~/code/mlde-infrastructure/bin/jasmin/queue-mlde -g 1 -m 10G -- pixi run python bin/predict.py --checkpoint ${epoch} --num-samples 1 --dataset ${dataset} --split test  --batch-size 540 ${workdir};
+  done
+  done
+  done
+done
+done
