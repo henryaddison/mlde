@@ -39,7 +39,9 @@ for training_period in hist_fut esd; do
 
     dataset="${domain^^}_domain-${period}-${training_gcm_name}-${framework}"
 
-    ~/code/mlde-infrastructure/bin/jasmin/queue-mlde -g 1 -m 10G -- pixi run python bin/predict.py --checkpoint ${epoch} --num-samples 1 --dataset ${dataset} --split val  --batch-size 540 ${workdir};
+    set -x
+    ~/code/mlde-infrastructure/bin/jasmin/queue-mlde -g 1 -m 10G -- pixi run python bin/predict.py --checkpoint ${epoch} --num-samples 1 --dataset ${dataset} --split val --batch-size 540 ${workdir};
+    set +x
   done
   done
 
@@ -53,7 +55,9 @@ for training_period in hist_fut esd; do
 
     dataset="${domain^^}_domain-${period}-${gcm_name}-${framework}"
 
-    ~/code/mlde-infrastructure/bin/jasmin/queue-mlde -g 1 -m 10G -- pixi run python bin/predict.py --checkpoint ${epoch} --num-samples 1 --dataset ${dataset} --split test  --batch-size 540 ${workdir};
+    set -x
+    ~/code/mlde-infrastructure/bin/jasmin/queue-mlde -g 1 -m 10G -- pixi run python bin/predict.py --checkpoint ${epoch} --num-samples 1 --dataset ${dataset} --split test --batch-size 540 ${workdir};
+    set +x
   done
   done
   done
