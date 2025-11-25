@@ -5,6 +5,8 @@ on: [push]
 jobs:
   ci-checks:
     runs-on: ubuntu-latest
+    env:
+      CONDA_OVERRIDE_CUDA: 12.8
     strategy:
       max-parallel: 5
     steps:
@@ -17,7 +19,5 @@ jobs:
           cache: true
           environments: dev
           activate-environment: true
-        env:
-          CONDA_OVERRIDE_CUDA: 12.8
       - name: Run tests
         run: pixi run test
