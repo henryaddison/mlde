@@ -263,7 +263,7 @@ def main(
         if input_transform_dataset is not None:
             config.data.input_transform_dataset = input_transform_dataset
         else:
-            config.data.input_transform_dataset = dataset
+            config.data.input_transform_dataset = config.data.dataset_name
 
         if "target_transform_overrides" not in config.data:
             config.data.target_transform_overrides = config_dict.ConfigDict()
