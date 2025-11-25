@@ -39,12 +39,9 @@ def get_variables(_dataset_name):
     return predictor_variables, target_variables
 
 
-def open_raw_dataset_split(
+def open_raw_dataset_split_predictors(
     dataset_name,
     split,
-    predictor_variables,
-    target_variables,
-    open_predictands,
 ):
     domain, experiment, gcm_name, framework = dataset_name.split("-")
     split_dir = split
@@ -55,11 +52,6 @@ def open_raw_dataset_split(
 
     predictor_filepath = experiment_path / "predictors" / "Variable_fields.nc"
     predictor_ds = xr.open_dataset(predictor_filepath)
-    predictand_ds = None
-
-    if open_predictands:
-        predictand_filepath = experiment_path / "target" / "pr_tasmax.nc"
-        predictand_ds = xr.open_dataset(predictand_filepath)
 
     if split in ["train", "val"]:
         split_years = SPLIT_YEARS[experiment][split]
@@ -67,47 +59,75 @@ def open_raw_dataset_split(
         split_mask = predictor_ds["time.year"].isin(split_years)
         predictor_ds = predictor_ds.sel(time=split_mask)
 
-        if open_predictands:
-            split_mask = predictand_ds["time.year"].isin(split_years)
-            predictand_ds = predictand_ds.sel(time=split_mask)
-
-    predictor_ds = predictor_ds[predictor_variables]
-    if open_predictands:
-        predictand_ds = predictand_ds[target_variables]
-
-    return predictor_ds, predictand_ds
+    return predictor_ds
 
 
-def get_transforms(
+def open_raw_dataset_split_predictands(
     dataset_name,
-    input_transform_key,
-    target_transform_keys,
-    predictor_variables,
-    target_variables,
+    split,
+):
+    domain, experiment, gcm_name, framework = dataset_name.split("-")
+    split_dir = split
+    if split == "val":
+        split_dir = "train"
+
+    experiment_path = DATA_PATH / dataset_name / split_dir
+
+    predictand_filepath = experiment_path / "target" / "pr_tasmax.nc"
+    predictand_ds = xr.open_dataset(predictand_filepath)
+
+    if split in ["train", "val"]:
+        split_years = SPLIT_YEARS[experiment][split]
+
+        split_mask = predictand_ds["time.year"].isin(split_years)
+        predictand_ds = predictand_ds.sel(time=split_mask)
+
+    return predictand_ds
+
+
+def get_predictor_transform(
+    dataset_name,
+    key,
+    variables,
+    transform_dir,
+):
+    ds = open_raw_dataset_split_predictors(
+        dataset_name,
+        "train",
+    )
+
+    input_transform = build_input_transform(variables, key)
+
+    input_transform.fit(ds, ds)
+
+    ds.close()
+    del ds
+    gc.collect()
+
+    return input_transform
+
+
+def get_target_transform(
+    dataset_name,
+    keys,
+    variables,
     transform_dir,
 ):
 
-    predictor_ds, predictand_ds = open_raw_dataset_split(
+    ds = open_raw_dataset_split_predictands(
         dataset_name,
         "train",
-        predictor_variables,
-        target_variables,
-        open_predictands=True,
     )
 
-    input_transform = build_input_transform(predictor_variables, input_transform_key)
-    target_transform = build_target_transform(target_variables, target_transform_keys)
+    target_transform = build_target_transform(variables, keys)
 
-    input_transform.fit(predictor_ds, predictor_ds)
-    target_transform.fit(predictand_ds, predictand_ds)
+    target_transform.fit(ds, ds)
 
-    predictor_ds.close()
-    del predictor_ds
-    predictand_ds.close()
-    del predictand_ds
+    ds.close()
+    del ds
     gc.collect()
 
-    return input_transform, target_transform
+    return target_transform
 
 
 def get_dataloader(
@@ -124,17 +144,18 @@ def get_dataloader(
 
     predictor_variables, target_variables = get_variables(dataset_name)
 
-    predictor_ds, predictand_ds = open_raw_dataset_split(
+    predictor_ds = open_raw_dataset_split_predictors(
         dataset_name,
         split,
-        predictor_variables,
-        target_variables,
-        open_predictands=training,
     )
 
     predictor_ds = transform.transform(predictor_ds)
 
     if training:
+        predictand_ds = open_raw_dataset_split_predictands(
+            dataset_name,
+            split,
+        )
         predictand_ds = target_transform.transform(predictand_ds)
         pt_dataset = CordexMLTrainingDataset(
             predictor_ds, predictand_ds, predictor_variables, target_variables
@@ -155,7 +176,7 @@ def get_dataloader(
         pt_dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=custom_collate
     )
 
-    return data_loader, transform, target_transform
+    return data_loader
 
 
 class CordexMLDataset(Dataset):

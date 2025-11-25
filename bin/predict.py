@@ -21,8 +21,9 @@ import yaml
 from ml_downscaling_emulator.cordex_ml_data import (
     get_dataloader,
     np_samples_to_xr,
-    open_raw_dataset_split,
-    get_transforms,
+    open_raw_dataset_split_predictands,
+    get_target_transform,
+    get_predictor_transform,
 )
 from mlde_utils import samples_path, DEFAULT_ENSEMBLE_MEMBER
 
@@ -171,8 +172,8 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
 
     # infer dimensions, variable attributes and non-time coordinates and CF-related variables from training dataset
     # TODO: what about when applying different regions than trained on? can't infer from training data and testing data may not have target coords
-    _, train_predictand_ds = open_raw_dataset_split(
-        config.data.dataset_name, "train", [], target_vars, open_predictands=True
+    train_predictand_ds = open_raw_dataset_split_predictands(
+        config.data.dataset_name, "train"
     )
 
     target_dims = train_predictand_ds[target_vars[0]].dims
@@ -304,16 +305,22 @@ def main(
 
     predictor_variables, target_variables = get_variables(dataset)
 
-    transform, target_transform = get_transforms(
-        config.data.dataset_name,
-        input_transform_key=config.data.input_transform_key,
-        target_transform_keys=target_xfm_keys,
-        predictor_variables=predictor_variables,
-        target_variables=target_variables,
+    transform = get_predictor_transform(
+        config.data.input_transform_dataset,
+        key=config.data.input_transform_key,
+        variables=predictor_variables,
         transform_dir=transform_dir,
     )
+
+    target_transform = get_target_transform(
+        config.data.dataset_name,
+        keys=target_xfm_keys,
+        variables=target_variables,
+        transform_dir=transform_dir,
+    )
+
     # Data
-    eval_dl, _, target_transform = get_dataloader(
+    eval_dl = get_dataloader(
         dataset,
         predictor_variables=predictor_variables,
         target_variables=target_variables,

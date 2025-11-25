@@ -45,7 +45,7 @@ from tqdm.contrib.logging import logging_redirect_tqdm
 from torch.utils.tensorboard import SummaryWriter
 from .utils import save_checkpoint, restore_checkpoint
 
-from ml_downscaling_emulator.cordex_ml_data import get_dataloader, get_variables, get_transforms
+from ml_downscaling_emulator.cordex_ml_data import get_dataloader, get_variables, get_predictor_transform, get_target_transform
 from mlde_utils import DatasetMetadata
 from ml_downscaling_emulator.training import log_epoch, track_run
 
@@ -121,16 +121,22 @@ def train(config, workdir):
 
     predictor_variables, target_variables = get_variables(config.data.dataset_name)
 
-    transform, target_transform = get_transforms(
+    transform = get_predictor_transform(
         config.data.dataset_name,
-        input_transform_key=config.data.input_transform_key,
-        target_transform_keys=target_xfm_keys,
-        predictor_variables=predictor_variables,
-        target_variables=target_variables,
+        key=config.data.input_transform_key,
+        variables=predictor_variables,
         transform_dir=transform_dir,
     )
 
-    train_dl, _, _ = get_dataloader(
+
+    target_transform = get_target_transform(
+        config.data.dataset_name,
+        keys=target_xfm_keys,
+        variables=target_variables,
+        transform_dir=transform_dir,
+    )
+
+    train_dl = get_dataloader(
       config.data.dataset_name,
       predictor_variables=predictor_variables,
       target_variables=target_variables,
@@ -142,7 +148,7 @@ def train(config, workdir):
       training=True,
     )
 
-    eval_dl, _, _ = get_dataloader(
+    eval_dl = get_dataloader(
       config.data.dataset_name,
       predictor_variables=predictor_variables,
       target_variables=target_variables,
