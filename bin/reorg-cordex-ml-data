@@ -26,7 +26,7 @@ for domain in ALPS_domain SA_domain NZ_domain; do
       fi
 
 
-      new_dir=${domain}-${experiment}-${gcm_name/-/}-${framework}
+      new_dir=${domain}-${experiment}-${gcm_name//-/}-${framework}
       mkdir -p ${new_dir}/train/predictors
       mkdir -p ${new_dir}/train/target
 
@@ -58,7 +58,7 @@ for domain in ALPS_domain SA_domain NZ_domain; do
         gcm_names=(ACCESS-CM2 EC-Earth3)
       fi
       for gcm_name in ${gcm_names[@]} ; do
-        new_dir=${domain}-${experiment}-${gcm_name/-/}-${framework}
+        new_dir=${domain}-${experiment}-${gcm_name//-/}-${framework}
         mkdir -p ${new_dir}/test/predictors
         mkdir -p ${new_dir}/test/target
 
