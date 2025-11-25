@@ -16,7 +16,7 @@
 
 # Lint as: python3
 """Training NCSN++ on precip data with sub-VP SDE."""
-from ml_downscaling_emulator.configs.cordex_ml_mv_cncsnpp_continuous_defaults import get_config as get_default_configs
+from ml_downscaling_emulator.configs.subvpsde.cordex_ml_mv_cncsnpp_continuous_defaults import get_config as get_default_configs
 
 
 def get_config():
