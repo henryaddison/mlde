@@ -4,7 +4,6 @@
 
 set -euo pipefail
 
-domain="alps"
 for domain in alps sa nz; do
 for training_period in hist_fut esd; do
 
@@ -19,6 +18,19 @@ for training_period in hist_fut esd; do
 
   training_gcm_name=${gcm_names[0]}
 
+  if [ "${training_period}" = "hist_fut" ]; then
+    epoch="epoch_200"
+    if [ "${domain}" = "alps" ]; then
+      epoch="epoch_100"
+    fi
+  elif [ "${training_period}" = "esd" ]; then
+    epoch="epoch_200"
+    if  [ "${domain}" = "nz" ]; then
+      epoch="epoch_160"
+    elif [ "${domain}" = "sa" ]; then
+      epoch="epoch_180"
+    fi
+  fi
 
   # val
   for period in ESD_pseudo_reality Emulator_hist_future; do
