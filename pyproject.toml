@@ -18,11 +18,11 @@ classifiers = [
 ]
 
 dependencies = [
-  "flufl-lock==7.1.1",
+  "flufl-lock~=7.1.1",
   "mlde-utils==0.2.0",
-  "mlflow",
-  #"python-cmethods==1.0.1",
-  "tqdm", "torchinfo>=1.8.0,<2",
+  "mlflow~=3.6",
+  "tqdm~=4.67",
+  "torchinfo>=1.8.0,<2",
 ]
 
 [dependency-groups]
@@ -56,28 +56,28 @@ lint = {features = ["lint"], no-default-feature = true}
 [tool.pixi.tasks]
 
 [tool.pixi.dependencies]
-cartopy = { version = "*" }
-cdo = { version = "~=2" }
-cf-xarray = { version = "*" }
-protobuf = { version = "*" }
-absl-py = { version = "==1.3.0" }
-bottleneck = { version = "*"}
-codetiming = { version = "==1.4.0" }
+absl-py = { version = "~=1.3.0" }
+bottleneck = { version = "~=1.6.0"}
+cartopy = { version = "~=0.25.0" }
+cdo = { version = "~=2.5.0" }
+cf-xarray = { version = "~=0.10.9" }
+codetiming = { version = "~=1.4.0" }
 cuda-version = "12.8.*"
 cuda = { version = "==12.8" }
-dask = { version = "*" }
-filelock = { version = "==3.8.2" }
-gxx = { version = "~=9" }
-ml-collections = { version = "*" }
-netcdf4 = { version = "*" }
-ninja = { version = "==1.11.0" }
-pint = { version = "*" }
-python = { version = "~=3.10" }
-python-cdo = { version = "~=1" }
-python-dotenv = { version = "==1.0.1" }
-shortuuid = { version = "==1.0.11" }
-tensorboard = { version = "*" }
-typer = { version = "*"}
+dask = { version = "==2025.11.0" }
+filelock = { version = "~=3.8.2" }
+gxx = { version = "~=14.3.0" }
+ml-collections = { version = "~=1.0.0" }
+netcdf4 = { version = "~=1.7.3" }
+ninja = { version = "~=1.11.0" }
+pint = { version = "~=0.25.2" }
+protobuf = { version = "~=6.31.1" }
+python = { version = "~=3.14.0" }
+python-cdo = { version = "~=1.6.1" }
+python-dotenv = { version = "~=1.0.1" }
+shortuuid = { version = "~=1.0.11" }
+tensorboard = { version = "~=2.20.0" }
+typer = { version = "~=0.20.0"}
 xarray = { version = "==2025.11.0" }
 
 [tool.pixi.pypi-dependencies]
@@ -86,10 +86,10 @@ torch = { version = "~=2.9", index = "https://download.pytorch.org/whl/cu128" }
 torchvision = { version = "~=0.24", index = "https://download.pytorch.org/whl/cu128" }
 
 [tool.pixi.feature.lint.dependencies]
-python = { version = "~=3.10" }
-pre-commit = "*"
-flake8 = { version = "==7.3.0" }
-black = { version = "==25.1.0" }
+python = { version = "3.12.*" }
+pre-commit = "~=4.5.0"
+flake8 = { version = "~=7.3.0" }
+black = { version = "~=25.1.0" }
 
 [tool.pixi.feature.dev.tasks]
 test = "pytest"
