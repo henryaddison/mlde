@@ -306,7 +306,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/linux-64/python-3.14.0-h32b2ec7_102_cp314.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-cdo-1.6.1-pyh332efcf_1.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-dateutil-2.9.0.post0-pyhe01879c_2.conda
-      - conda: https://prefix.dev/conda-forge/noarch/python-dotenv-1.0.1-pyhd8ed1ab_1.conda
+      - conda: https://prefix.dev/conda-forge/noarch/python-dotenv-1.2.1-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-tzdata-2025.2-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/python_abi-3.14-8_cp314.conda
       - conda: https://prefix.dev/conda-forge/noarch/pytz-2025.2-pyhd8ed1ab_0.conda
@@ -757,7 +757,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/linux-64/python-3.14.0-h32b2ec7_102_cp314.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-cdo-1.6.1-pyh332efcf_1.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-dateutil-2.9.0.post0-pyhe01879c_2.conda
-      - conda: https://prefix.dev/conda-forge/noarch/python-dotenv-1.0.1-pyhd8ed1ab_1.conda
+      - conda: https://prefix.dev/conda-forge/noarch/python-dotenv-1.2.1-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/python-tzdata-2025.2-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/python_abi-3.14-8_cp314.conda
       - conda: https://prefix.dev/conda-forge/noarch/pytz-2025.2-pyhd8ed1ab_0.conda
@@ -4962,7 +4962,7 @@ packages:
 - pypi: ./
   name: ml-downscaling-emulator
   version: 0.4.0
-  sha256: 1bf14891df5df19ce6a46823f9ac05f283c12c5b008601a5bbbd780e1ef1229a
+  sha256: 8963f89c240b6f2d59effc41e88af41929d57b6c6e31b96e5eae7ea2209c59ce
   requires_dist:
   - flufl-lock~=7.1.1
   - mlde-utils==0.2.0
@@ -6113,17 +6113,18 @@ packages:
   - pkg:pypi/python-dateutil?source=hash-mapping
   size: 233310
   timestamp: 1751104122689
-- conda: https://prefix.dev/conda-forge/noarch/python-dotenv-1.0.1-pyhd8ed1ab_1.conda
-  sha256: 99713f6b534fef94995c6c16fd21d59f3548784e9111775d692bdc7c44678f02
-  md5: e5c6ed218664802d305e79cc2d4491de
+- conda: https://prefix.dev/conda-forge/noarch/python-dotenv-1.2.1-pyhcf101f3_0.conda
+  sha256: aa98e0b1f5472161318f93224f1cfec1355ff69d2f79f896c0b9e033e4a6caf9
+  md5: 083725d6cd3dc007f06d04bcf1e613a2
   depends:
-  - python >=3.9
+  - python >=3.10
+  - python
   license: BSD-3-Clause
   license_family: BSD
   purls:
   - pkg:pypi/python-dotenv?source=hash-mapping
-  size: 24215
-  timestamp: 1733243277223
+  size: 26922
+  timestamp: 1761503229008
 - conda: https://prefix.dev/conda-forge/noarch/python-tzdata-2025.2-pyhd8ed1ab_0.conda
   sha256: e8392a8044d56ad017c08fec2b0eb10ae3d1235ac967d0aab8bd7b41c4a5eaf0
   md5: 88476ae6ebd24f39261e0854ac244f33

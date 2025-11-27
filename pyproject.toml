@@ -66,18 +66,18 @@ cuda-version = "12.8.*"
 cuda = { version = "==12.8" }
 dask = { version = "==2025.11.0" }
 filelock = { version = "~=3.8.2" }
-gxx = { version = "~=14.3.0" }
-ml-collections = { version = "~=1.0.0" }
-netcdf4 = { version = "~=1.7.3" }
-ninja = { version = "~=1.11.0" }
-pint = { version = "~=0.25.2" }
+gxx = { version = "~=14.3" }
+ml-collections = { version = "~=1.0" }
+netcdf4 = { version = "~=1.7" }
+ninja = { version = "~=1.11.1" }
+pint = { version = "~=0.25" }
 protobuf = { version = "~=6.31.1" }
 python = { version = "~=3.14.0" }
-python-cdo = { version = "~=1.6.1" }
-python-dotenv = { version = "~=1.0.1" }
-shortuuid = { version = "~=1.0.11" }
-tensorboard = { version = "~=2.20.0" }
-typer = { version = "~=0.20.0"}
+python-cdo = { version = "~=1.6" }
+python-dotenv = { version = "~=1.0" }
+shortuuid = { version = "~=1.0" }
+tensorboard = { version = "~=2.20" }
+typer = { version = "~=0.20"}
 xarray = { version = "==2025.11.0" }
 
 [tool.pixi.pypi-dependencies]
@@ -87,8 +87,8 @@ torchvision = { version = "~=0.24", index = "https://download.pytorch.org/whl/cu
 
 [tool.pixi.feature.lint.dependencies]
 python = { version = "3.12.*" }
-pre-commit = "~=4.5.0"
-flake8 = { version = "~=7.3.0" }
+pre-commit = "~=4.5"
+flake8 = { version = "~=7.3" }
 black = { version = "~=25.1.0" }
 
 [tool.pixi.feature.dev.tasks]
