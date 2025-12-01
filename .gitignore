@@ -5,6 +5,7 @@ src/ml_downscaling_emulator/unet
 checkpoints/
 mlruns/
 runs/
+mlflow.db
 
 # Slurm job output
 slurm-*.out
