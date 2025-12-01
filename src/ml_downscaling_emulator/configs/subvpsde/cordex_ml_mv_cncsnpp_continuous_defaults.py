@@ -39,7 +39,6 @@ def get_config():
   # data
   data = config.data
   data.centered = True
-  data.dataset_name = 'SA_domain-ESD_pseudo_reality-ACCESSCM2-perfect'
   data.image_size = 128
   data.predictor_image_size = 16
 
