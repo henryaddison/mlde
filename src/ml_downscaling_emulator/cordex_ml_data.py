@@ -12,6 +12,9 @@ import xarray as xr
 
 from mlde_utils.transforms import build_input_transform, build_target_transform
 
+DATA_PATH = Path(os.getenv("DATA_PATH"))
+DATASETS_PATH = DATA_PATH / "datasets"
+
 TIME_RANGE = (
     cftime.Datetime360Day(1980, 12, 1, 12, 0, 0, 0, has_year_zero=True),
     cftime.Datetime360Day(2080, 11, 30, 12, 0, 0, 0, has_year_zero=True),
@@ -27,8 +30,6 @@ SPLIT_YEARS = {
         "val": list(range(2090, 2099 + 1)),
     },
 }
-
-DATA_PATH = Path(os.getenv("DATA_PATH"))
 
 
 def get_variables(_dataset_name):
@@ -48,7 +49,7 @@ def open_raw_dataset_split_predictors(
     if split == "val":
         split_dir = "train"
 
-    experiment_path = DATA_PATH / dataset_name / split_dir
+    experiment_path = DATASETS_PATH / dataset_name / split_dir
 
     predictor_filepath = experiment_path / "predictors" / "Variable_fields.nc"
     predictor_ds = xr.open_dataset(predictor_filepath)
@@ -71,7 +72,7 @@ def open_raw_dataset_split_predictands(
     if split == "val":
         split_dir = "train"
 
-    experiment_path = DATA_PATH / dataset_name / split_dir
+    experiment_path = DATASETS_PATH / dataset_name / split_dir
 
     predictand_filepath = experiment_path / "target" / "pr_tasmax.nc"
     predictand_ds = xr.open_dataset(predictand_filepath)

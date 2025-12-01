@@ -1,5 +1,9 @@
 """Generate samples"""
 
+from dotenv import load_dotenv
+
+load_dotenv()  # make sure to take environment variables from .env before importing other modules
+
 from collections import defaultdict
 import hashlib
 import itertools
@@ -7,7 +11,6 @@ import os
 from pathlib import Path
 
 from codetiming import Timer
-from dotenv import load_dotenv
 from ml_collections import config_dict
 import shortuuid
 import torch
@@ -61,8 +64,6 @@ from ml_downscaling_emulator.sde_lib import (
     VPSDE,
     subVPSDE,
 )
-
-load_dotenv()  # take environment variables from .env.
 
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO").upper(),
