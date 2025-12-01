@@ -1,0 +1,3 @@
+[submodule "vendor/ml-benchmark"]
+	path = vendor/ml-benchmark
+	url = git@github.com:WCRP-CORDEX/ml-benchmark.git
