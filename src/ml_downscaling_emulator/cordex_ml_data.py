@@ -22,12 +22,15 @@ TIME_RANGE = (
 
 SPLIT_YEARS = {
     "ESD_pseudo_reality": {
-        "train": list(range(1961, 1975)),
-        "val": list(range(1975, 1980 + 1)),
+        "train": sorted(set(range(1961, 1980 + 1)) - set([1967, 1975])),
+        "val": [1967, 1975],
     },
     "Emulator_hist_future": {
-        "train": list(range(1961, 1980 + 1)) + list(range(2080, 2090)),
-        "val": list(range(2090, 2099 + 1)),
+        "train": sorted(
+            set(range(1961, 1980 + 1))
+            | set(range(2080, 2100 + 1)) - set([1967, 1975, 2087, 2095])
+        ),
+        "val": [1967, 1975, 2087, 2095],
     },
 }
 
