@@ -69,7 +69,7 @@ logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO").upper(),
     format="%(levelname)s - %(filename)s - %(asctime)s - %(message)s",
 )
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 app = typer.Typer()
 

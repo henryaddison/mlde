@@ -52,7 +52,7 @@ def main(argv):
         handler.setFormatter(formatter)
         logger = logging.getLogger()
         logger.addHandler(handler)
-        logger.setLevel("INFO")
+        logger.setLevel(os.environ.get("LOG_LEVEL", "INFO").upper())
         # Run the training pipeline
         run_lib.train(FLAGS.config, FLAGS.workdir)
     else:

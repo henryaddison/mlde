@@ -1,5 +1,6 @@
 """Loading CORDEX ML data into PyTorch"""
 
+import logging
 import cftime
 import cf_xarray  # noqa: F401
 import gc
@@ -21,6 +22,8 @@ TIME_RANGE = (
 )
 
 VAL_SPLIT_YEARS = [1967, 1975, 2087, 2095]
+
+logger = logging.getLogger(__name__)
 
 
 def get_variables(_dataset_name):
@@ -79,15 +82,19 @@ def get_predictor_transform(
     variables,
     transform_dir,
 ):
+    logger.debug("Opening training predictor dataset for input transform fitting")
     ds = open_raw_dataset_split_predictors(
         dataset_name,
         "train",
     )
 
+    logger.debug("Building input transform object")
     input_transform = build_input_transform(variables, key)
 
+    logger.debug("Fitting input transform")
     input_transform.fit(ds, ds)
 
+    logger.debug("Memory cleanup after input transform fitting")
     ds.close()
     del ds
     gc.collect()
@@ -101,16 +108,19 @@ def get_target_transform(
     variables,
     transform_dir,
 ):
-
+    logger.debug("Opening training predictand dataset for target transform fitting")
     ds = open_raw_dataset_split_predictands(
         dataset_name,
         "train",
     )
 
+    logger.debug("Building target transform object")
     target_transform = build_target_transform(variables, keys)
 
+    logger.debug("Fitting target transform")
     target_transform.fit(ds, ds)
 
+    logger.debug("Memory cleanup after target transform fitting")
     ds.close()
     del ds
     gc.collect()

@@ -2,7 +2,9 @@
 
 set -euo pipefail
 
-config_name="cordex_ml_mv_esd_sa_unet"
+export LOG_LEVEL=DEBUG
+
+config_name="cordex_ml_mv_hist_fut_alps_unet"
 
 workdir="output/test/deterministic/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/configs/deterministic/${config_name}.py"
