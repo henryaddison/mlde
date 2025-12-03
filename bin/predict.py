@@ -235,10 +235,11 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
         xr_sample_batches,
         compat="no_conflicts",
         combine_attrs="drop_conflicts",
-        coords="all",
+        coords="minimal",
         join="inner",
-        data_vars="all",
+        data_vars="minimal",
     )
+
     return ds
 
 
