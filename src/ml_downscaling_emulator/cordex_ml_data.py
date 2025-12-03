@@ -20,19 +20,7 @@ TIME_RANGE = (
     cftime.Datetime360Day(2080, 11, 30, 12, 0, 0, 0, has_year_zero=True),
 )
 
-SPLIT_YEARS = {
-    "ESD_pseudo_reality": {
-        "train": sorted(set(range(1961, 1980 + 1)) - set([1967, 1975])),
-        "val": [1967, 1975],
-    },
-    "Emulator_hist_future": {
-        "train": sorted(
-            set(range(1961, 1980 + 1))
-            | set(range(2080, 2100 + 1)) - set([1967, 1975, 2087, 2095])
-        ),
-        "val": [1967, 1975, 2087, 2095],
-    },
-}
+VAL_SPLIT_YEARS = [1967, 1975, 2087, 2095]
 
 
 def get_variables(_dataset_name):
@@ -43,50 +31,46 @@ def get_variables(_dataset_name):
     return predictor_variables, target_variables
 
 
-def open_raw_dataset_split_predictors(
-    dataset_name,
-    split,
-):
-    domain, experiment, gcm_name, framework = dataset_name.split("-")
+def _experiment_path(dataset_name, split):
     split_dir = split
     if split == "val":
         split_dir = "train"
 
-    experiment_path = DATASETS_PATH / dataset_name / split_dir
+    return DATASETS_PATH / dataset_name / split_dir
 
-    predictor_filepath = experiment_path / "predictors" / "Variable_fields.nc"
-    predictor_ds = xr.open_dataset(predictor_filepath)
+
+def _open_raw_split(filepath, split):
+    ds = xr.open_dataset(filepath)
 
     if split in ["train", "val"]:
-        split_years = SPLIT_YEARS[experiment][split]
+        split_mask = ds["time.year"].isin(VAL_SPLIT_YEARS)
+        if split == "train":
+            split_mask = ~split_mask
+        ds = ds.sel(time=split_mask)
 
-        split_mask = predictor_ds["time.year"].isin(split_years)
-        predictor_ds = predictor_ds.sel(time=split_mask)
-
-    return predictor_ds
+    return ds
 
 
 def open_raw_dataset_split_predictands(
     dataset_name,
     split,
 ):
-    domain, experiment, gcm_name, framework = dataset_name.split("-")
-    split_dir = split
-    if split == "val":
-        split_dir = "train"
+    experiment_path = _experiment_path(dataset_name, split)
 
-    experiment_path = DATASETS_PATH / dataset_name / split_dir
+    filepath = experiment_path / "target" / "pr_tasmax.nc"
 
-    predictand_filepath = experiment_path / "target" / "pr_tasmax.nc"
-    predictand_ds = xr.open_dataset(predictand_filepath)
+    return _open_raw_split(filepath, split)
 
-    if split in ["train", "val"]:
-        split_years = SPLIT_YEARS[experiment][split]
 
-        split_mask = predictand_ds["time.year"].isin(split_years)
-        predictand_ds = predictand_ds.sel(time=split_mask)
+def open_raw_dataset_split_predictors(
+    dataset_name,
+    split,
+):
+    experiment_path = _experiment_path(dataset_name, split)
 
-    return predictand_ds
+    filepath = experiment_path / "predictors" / "Variable_fields.nc"
+
+    return _open_raw_split(filepath, split)
 
 
 def get_predictor_transform(
