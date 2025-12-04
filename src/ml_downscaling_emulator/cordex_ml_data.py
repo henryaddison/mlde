@@ -51,6 +51,8 @@ def _open_raw_split(filepath, split):
             split_mask = ~split_mask
         ds = ds.sel(time=split_mask)
 
+    if "axis" not in ds["time"].attrs:
+        ds["time"].attrs["axis"] = "T"
     return ds
 
 
