@@ -26,7 +26,7 @@ def get_config():
   training.sde = 'subvpsde'
   training.continuous = True
   training.reduce_mean = True
-  training.n_epochs = 200
+  training.n_epochs = 400
   training.snapshot_freq = 20
   training.eval_freq = 5000
 
