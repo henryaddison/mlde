@@ -119,7 +119,7 @@ def train(config, workdir):
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
 
-    predictor_variables, target_variables = get_variables(config.data.dataset_name)
+    predictor_variables, target_variables = get_variables(config)
 
     transform = get_predictor_transform(
         config.data.dataset_name,

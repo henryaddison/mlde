@@ -31,7 +31,7 @@ class DetPredNet(nn.Module):
     super().__init__()
     self.config = config
 
-    cond_var_channels, output_channels = list(map(len, get_variables(config.data.dataset_name)))
+    cond_var_channels, output_channels = list(map(len, get_variables(config)))
     if config.data.time_inputs:
       cond_time_channels = 3
     else:

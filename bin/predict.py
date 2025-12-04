@@ -144,7 +144,7 @@ def load_model(config, ckpt_filename):
     state["ema"].copy_to(state["model"].parameters())
 
     # Sampling
-    input_variables, target_vars = get_variables(config.data.dataset_name)
+    input_variables, target_vars = get_variables(config)
     num_output_channels = len(target_vars)
     sampling_shape = (
         config.eval.batch_size,
@@ -305,7 +305,7 @@ def main(
         config.data.target_transform_overrides
     )
 
-    predictor_variables, target_variables = get_variables(dataset)
+    predictor_variables, target_variables = get_variables(config)
 
     transform = get_predictor_transform(
         config.data.input_transform_dataset,

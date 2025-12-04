@@ -26,11 +26,11 @@ VAL_SPLIT_YEARS = [1967, 1975, 2087, 2095]
 logger = logging.getLogger(__name__)
 
 
-def get_variables(_dataset_name):
+def get_variables(config):
     predictor_variables = [
         f"{v}_{p}" for v in ["t", "u", "v", "z", "q"] for p in [500, 700, 850]
     ]
-    target_variables = ["pr", "tasmax"]
+    target_variables = config.data.target_variables
     return predictor_variables, target_variables
 
 
@@ -139,9 +139,6 @@ def get_dataloader(
     shuffle=True,
     training=True,
 ):
-
-    predictor_variables, target_variables = get_variables(dataset_name)
-
     predictor_ds = open_raw_dataset_split_predictors(
         dataset_name,
         split,

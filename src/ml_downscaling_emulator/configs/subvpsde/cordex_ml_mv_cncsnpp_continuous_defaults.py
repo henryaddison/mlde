@@ -41,6 +41,7 @@ def get_config():
   data.centered = True
   data.image_size = 128
   data.predictor_image_size = 16
+  data.target_variables = ["pr", "tasmax"]
 
   # model
   model = config.model

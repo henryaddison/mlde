@@ -51,7 +51,7 @@ class ScoreNet(nn.Module):
     super().__init__()
     self.config = config
     marginal_prob_std=None
-    cond_var_channels, output_channels = list(map(len, get_variables(config.data.dataset_name)))
+    cond_var_channels, output_channels = list(map(len, get_variables(config)))
     cond_time_channels = 3
     input_channels = output_channels + cond_var_channels + cond_time_channels + config.model.loc_spec_channels
     channels=[32, 64, 128, 256]

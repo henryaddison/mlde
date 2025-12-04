@@ -141,7 +141,7 @@ class cNCSNpp(nn.Module):
       raise ValueError(f'resblock type {resblock_type} unrecognized.')
 
     # Downsampling block
-    cond_var_channels, output_channels = list(map(len, get_variables(config.data.dataset_name)))
+    cond_var_channels, output_channels = list(map(len, get_variables(config)))
     if config.data.time_inputs:
       cond_time_channels = 3
     else:

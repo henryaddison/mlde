@@ -1,6 +1,6 @@
 # coding=utf-8
 # Copyright 2020 The Google Research Authors.
-# Modifications copyright 2025 Henry Addison
+# Modifications copyright 2025 Henry Addison.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 # limitations under the License.
 
 # Lint as: python3
-"""
-Config for simple U-Net on multivariate SA-domain ESD-experiment data used in a deterministic fashion.
-"""
+"""Training NCSN++ on CORDEX-ML-BENCH multivariate data with sub-VP SDE for historical and future emulator experiment."""
+from ml_downscaling_emulator.configs.subvpsde.cordex_ml_mv_cncsnpp_continuous_defaults import get_config as get_default_configs
 
-from ml_downscaling_emulator.configs.deterministic.cordex_ml_defaults import get_config as get_default_configs
 
 def get_config():
   config = get_default_configs()
 
   # data
   data = config.data
-  data.dataset_name = 'NZ_domain-ESD_pseudo_reality-ACCESSCM2-perfect'
+  data.target_variables = ["pr"]
+  data.dataset_name = 'SA_domain-Emulator_hist_future-ACCESSCM2-perfect'
 
   return config

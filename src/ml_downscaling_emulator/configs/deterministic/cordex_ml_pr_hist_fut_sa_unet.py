@@ -19,13 +19,13 @@
 Config for simple U-Net on multivariate SA-domain ESD-experiment data used in a deterministic fashion.
 """
 
-from ml_downscaling_emulator.configs.deterministic.cordex_ml_defaults import get_config as get_default_configs
+from ml_downscaling_emulator.configs.deterministic.cordex_ml_mv_hist_fut_sa_unet import get_config as get_default_configs
 
 def get_config():
   config = get_default_configs()
 
   # data
   data = config.data
-  data.dataset_name = 'SA_domain-ESD_pseudo_reality-ACCESSCM2-perfect'
+  data.target_variables = ["pr"]
 
   return config
