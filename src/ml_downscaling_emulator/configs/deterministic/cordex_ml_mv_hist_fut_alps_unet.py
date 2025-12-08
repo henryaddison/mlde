@@ -19,6 +19,7 @@
 Config for simple U-Net on multivariate SA-domain ESD-experiment data used in a deterministic fashion.
 """
 
+import ml_collections
 from ml_downscaling_emulator.configs.deterministic.cordex_ml_defaults import get_config as get_default_configs
 
 def get_config():
@@ -27,5 +28,7 @@ def get_config():
   # data
   data = config.data
   data.dataset_name = 'ALPS_domain-Emulator_hist_future-CNRMCM5-perfect'
+  data.target_transform_overrides = ml_collections.ConfigDict()
+  data.target_transform_overrides.tasmax = "mm;recen"
 
   return config

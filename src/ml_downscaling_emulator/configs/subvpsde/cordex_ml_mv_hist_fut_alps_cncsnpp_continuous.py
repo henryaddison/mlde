@@ -16,6 +16,7 @@
 
 # Lint as: python3
 """Training NCSN++ on CORDEX-ML-BENCH multivariate data with sub-VP SDE for historical and future emulator experiment."""
+import ml_collections
 from ml_downscaling_emulator.configs.subvpsde.cordex_ml_mv_cncsnpp_continuous_defaults import get_config as get_default_configs
 
 
@@ -25,5 +26,7 @@ def get_config():
   # data
   data = config.data
   data.dataset_name = 'ALPS_domain-Emulator_hist_future-CNRMCM5-perfect'
+  data.target_transform_overrides = ml_collections.ConfigDict()
+  data.target_transform_overrides.tasmax = "mm;recen"
 
   return config

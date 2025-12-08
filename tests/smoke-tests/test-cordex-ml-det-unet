@@ -4,7 +4,7 @@ set -euo pipefail
 
 export LOG_LEVEL=DEBUG
 
-config_name="cordex_ml_pr_hist_fut_nz_unet"
+config_name="cordex_ml_mv_hist_fut_alps_unet"
 
 workdir="output/test/deterministic/${config_name}/test-run"
 config_path="src/ml_downscaling_emulator/configs/deterministic/${config_name}.py"
@@ -14,7 +14,7 @@ train_batch_size=32
 epoch=2
 
 rm -rf ${workdir}
-EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.model.loc_spec_channels=${loc_spec_channels} --config.training.batch_size=${train_batch_size} --config.training.snapshot_freq=5 --config.training.eval_freq=100 --config.training.log_freq=50 --config.training.n_epochs=${epoch}
+EXPERIMENT_NAME="test" python bin/main.py --workdir ${workdir} --config ${config_path} --mode train --config.model.loc_spec_channels=${loc_spec_channels} --config.training.batch_size=${train_batch_size} --config.training.snapshot_freq=5 --config.training.eval_freq=100 --config.training.log_freq=50 --config.training.n_epochs=${epoch} --config.data.target_transform_overrides.tasmax="mm;recen"
 
 num_samples=2
 eval_batch_size=32
