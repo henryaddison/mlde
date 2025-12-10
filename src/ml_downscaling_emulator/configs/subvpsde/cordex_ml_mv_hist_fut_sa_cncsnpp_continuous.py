@@ -24,6 +24,6 @@ def get_config():
 
   # data
   data = config.data
-  data.dataset_name = 'ALPS_domain-Emulator_hist_future-CNRMCM5-perfect'
+  data.dataset_name = 'SA_domain-Emulator_hist_future-ACCESSCM2-perfect'
 
   return config

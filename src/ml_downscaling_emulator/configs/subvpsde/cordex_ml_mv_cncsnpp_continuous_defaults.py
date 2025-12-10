@@ -15,7 +15,8 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training NCSN++ on precip data with sub-VP SDE."""
+"""Training NCSN++ on precip and tasmax data with sub-VP SDE."""
+import ml_collections
 from ml_downscaling_emulator.configs.default_ukcp_local_pr_12em_configs import get_default_configs
 
 
@@ -42,6 +43,8 @@ def get_config():
   data.image_size = 128
   data.predictor_image_size = 16
   data.target_variables = ["pr", "tasmax"]
+  data.target_transform_overrides = ml_collections.ConfigDict()
+  data.target_transform_overrides.tasmax = "mm;recen"
 
   # model
   model = config.model

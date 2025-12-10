@@ -15,15 +15,21 @@
 # limitations under the License.
 
 # Lint as: python3
-"""Training NCSN++ on CORDEX-ML-BENCH multivariate data with sub-VP SDE for historical and future emulator experiment."""
+"""Training NCSN++ on CORDEX-ML-BENCH tasmax data with sub-VP SDE for historical and future emulator experiment."""
 from ml_downscaling_emulator.configs.subvpsde.cordex_ml_mv_cncsnpp_continuous_defaults import get_config as get_default_configs
 
 
 def get_config():
   config = get_default_configs()
 
+  # training
+  training = config.training
+  training.batch_size = 16
+
   # data
   data = config.data
-  data.dataset_name = 'ALPS_domain-Emulator_hist_future-CNRMCM5-perfect'
+  data.target_variables = ["tasmax"]
+  data.target_transform_key = "mm;recen"
+  data.dataset_name = 'NZ_domain-Emulator_hist_future-ACCESSCM2-perfect'
 
   return config
