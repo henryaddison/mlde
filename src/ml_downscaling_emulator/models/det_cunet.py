@@ -31,12 +31,12 @@ class DetPredNet(nn.Module):
     super().__init__()
     self.config = config
 
-    cond_var_channels, output_channels = list(map(len, get_variables(config)))
+    cond_var_channels, static_channels, output_channels = list(map(len, get_variables(config)))
     if config.data.time_inputs:
       cond_time_channels = 3
     else:
       cond_time_channels = 0
-    input_channels = cond_var_channels + cond_time_channels + config.model.loc_spec_channels
+    input_channels = cond_var_channels + static_channels + cond_time_channels + config.model.loc_spec_channels
 
     self.unet = unet.UNet(input_channels, output_channels)
 

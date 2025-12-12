@@ -24,7 +24,7 @@ def get_config():
 
   # data
   data = config.data
-  data.target_variables = ["pr"]
+  data.target_variables = ("pr",)
   data.dataset_name = 'ALPS_domain-Emulator_hist_future-CNRMCM5-perfect'
 
   return config

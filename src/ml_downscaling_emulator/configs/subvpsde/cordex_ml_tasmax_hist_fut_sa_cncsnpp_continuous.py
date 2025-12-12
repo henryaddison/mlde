@@ -28,7 +28,7 @@ def get_config():
 
   # data
   data = config.data
-  data.target_variables = ["tasmax"]
+  data.target_variables = ("tasmax",)
   data.target_transform_key = "mm;recen"
   data.dataset_name = 'SA_domain-Emulator_hist_future-ACCESSCM2-perfect'
 

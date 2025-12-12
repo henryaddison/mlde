@@ -31,7 +31,9 @@ def get_variables(config):
         f"{v}_{p}" for v in ["t", "u", "v", "z", "q"] for p in [500, 700, 850]
     ]
     target_variables = config.data.target_variables
-    return predictor_variables, target_variables
+    static_variables = config.data.static_variables
+
+    return predictor_variables, static_variables, target_variables
 
 
 def _experiment_path(dataset_name, split):
@@ -76,6 +78,17 @@ def open_raw_dataset_split_predictors(
     filepath = experiment_path / "predictors" / "Variable_fields.nc"
 
     return _open_raw_split(filepath, split)
+
+
+def open_raw_dataset_split_static_inputs(
+    dataset_name,
+    split,
+):
+    experiment_path = _experiment_path(dataset_name, split)
+
+    filepath = experiment_path / "predictors" / "Static_fields.nc"
+
+    return xr.open_dataset(filepath)
 
 
 def get_predictor_transform(
@@ -133,6 +146,7 @@ def get_target_transform(
 def get_dataloader(
     dataset_name,
     predictor_variables,
+    static_variables,
     target_variables,
     transform,
     target_transform,
@@ -146,6 +160,11 @@ def get_dataloader(
         split,
     )
 
+    static_ds = open_raw_dataset_split_static_inputs(
+        dataset_name,
+        split,
+    )
+
     predictor_ds = transform.transform(predictor_ds)
 
     if training:
@@ -154,12 +173,18 @@ def get_dataloader(
             split,
         )
         predictand_ds = target_transform.transform(predictand_ds)
+
         pt_dataset = CordexMLTrainingDataset(
-            predictor_ds, predictand_ds, predictor_variables, target_variables
+            predictor_ds,
+            static_ds,
+            predictand_ds,
+            predictor_variables,
+            static_variables,
+            target_variables,
         )
     else:
         pt_dataset = CordexMLDataset(
-            predictor_ds, predictor_variables, target_variables
+            predictor_ds, static_ds, predictor_variables, static_variables
         )
 
     def custom_collate(batch):
@@ -177,11 +202,12 @@ def get_dataloader(
 
 
 class CordexMLDataset(Dataset):
-    def __init__(self, predictor_ds, variables, target_variables):
-        self.predictor_da = predictor_ds[variables].cf.transpose("T", "Y", "X")
+    def __init__(self, predictor_ds, static_ds, variables, static_variables):
+        self.variables = list(variables)
+        self.static_variables = list(static_variables)
 
-        self.variables = variables
-        self.target_variables = target_variables
+        self.predictor_da = predictor_ds[self.variables].cf.transpose("T", "Y", "X")
+        self.static_da = static_ds.cf.transpose("Y", "X")[self.static_variables]
 
     def __len__(self):
         return len(self.predictor_da.time)
@@ -196,19 +222,43 @@ class CordexMLDataset(Dataset):
             dtype=torch.float32,
         )
 
+        if len(self.static_variables) > 0:
+            statics = torch.tensor(
+                # stack features before lat-lon (HW)
+                np.stack(
+                    [self.static_da[var] for var in self.static_variables],
+                    axis=-3,
+                ),
+                dtype=torch.float32,
+            )
+        else:
+            statics = torch.tensor([])
+
         time = self.predictor_da.isel(time=idx)["time"].values.reshape(-1)
 
-        return predictors, time
+        return predictors, statics, time
 
 
 class CordexMLTrainingDataset(CordexMLDataset):
-    def __init__(self, predictor_ds, predictand_ds, variables, target_variables):
-        super().__init__(predictor_ds, variables, target_variables)
+    def __init__(
+        self,
+        predictor_ds,
+        static_ds,
+        predictand_ds,
+        variables,
+        static_variables,
+        target_variables,
+    ):
+        super().__init__(predictor_ds, static_ds, variables, static_variables)
 
-        self.predictand_da = predictand_ds[target_variables].cf.transpose("T", "Y", "X")
+        self.target_variables = list(target_variables)
+
+        self.predictand_da = predictand_ds[self.target_variables].cf.transpose(
+            "T", "Y", "X"
+        )
 
     def __getitem__(self, idx):
-        predictors, time = super().__getitem__(idx)
+        predictors, statics, time = super().__getitem__(idx)
 
         predictands = torch.tensor(
             # stack features before lat-lon (HW)
@@ -222,7 +272,7 @@ class CordexMLTrainingDataset(CordexMLDataset):
             dtype=torch.float32,
         )
 
-        return predictors, predictands, time
+        return predictors, statics, predictands, time
 
 
 def np_samples_to_xr(

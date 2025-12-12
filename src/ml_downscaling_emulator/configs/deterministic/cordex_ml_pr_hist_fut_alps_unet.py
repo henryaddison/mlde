@@ -26,6 +26,6 @@ def get_config():
 
   # data
   data = config.data
-  data.target_variables = ["pr"]
+  data.target_variables = ("pr",)
 
   return config

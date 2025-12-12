@@ -42,7 +42,8 @@ def get_config():
   data.centered = True
   data.image_size = 128
   data.predictor_image_size = 16
-  data.target_variables = ["pr", "tasmax"]
+  data.target_variables = ("pr", "tasmax")
+  data.static_variables = ()
   data.target_transform_overrides = ml_collections.ConfigDict()
   data.target_transform_overrides.tasmax = "mm;recen"
 

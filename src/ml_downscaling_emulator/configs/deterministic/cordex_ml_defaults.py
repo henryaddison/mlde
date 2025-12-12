@@ -33,7 +33,8 @@ def get_config():
   data = config.data
   data.image_size = 128
   data.predictor_image_size = 16
-  data.target_variables = ["pr", "tasmax"]
+  data.target_variables = ("pr", "tasmax")
+  data.static_variables = ()
   data.input_transform_key = "stan"
   data.target_transform_key = "sqrturrecen"
   data.input_transform_dataset = None

@@ -144,7 +144,7 @@ def load_model(config, ckpt_filename):
     state["ema"].copy_to(state["model"].parameters())
 
     # Sampling
-    input_variables, target_vars = get_variables(config)
+    _, _, target_vars = get_variables(config)
     num_output_channels = len(target_vars)
     sampling_shape = (
         config.eval.batch_size,
@@ -199,13 +199,16 @@ def sample(sampling_fn, state, config, eval_dl, target_transform, target_vars):
             desc=f"Sampling",
             unit=" timesteps",
         ) as pbar:
-            for cond_batch, time_batch in eval_dl:
+            for cond_batch, static_batch, time_batch in eval_dl:
                 # append any location-specific parameters
                 cond_batch = torch.nn.functional.interpolate(
                     cond_batch,
                     size=[config.data.image_size, config.data.image_size],
                     mode="nearest",
                 )
+
+                if torch.numel(static_batch) > 0:
+                    cond_batch = torch.cat([cond_batch, static_batch], dim=1)
                 cond_batch = location_params(cond_batch)
 
                 # TODO: get time_bnds too (as a data variable) if available
@@ -305,7 +308,7 @@ def main(
         config.data.target_transform_overrides
     )
 
-    predictor_variables, target_variables = get_variables(config)
+    predictor_variables, static_variables, target_variables = get_variables(config)
 
     transform = get_predictor_transform(
         config.data.input_transform_dataset,
@@ -325,6 +328,7 @@ def main(
     eval_dl = get_dataloader(
         dataset,
         predictor_variables=predictor_variables,
+        static_variables=static_variables,
         target_variables=target_variables,
         transform=transform,
         target_transform=target_transform,

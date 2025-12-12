@@ -28,7 +28,7 @@ def get_config():
 
   # data
   data = config.data
-  data.target_variables = ["tasmax"]
+  data.target_variables = ("tasmax",)
   data.target_transform_key = "mm;recen"
   data.dataset_name = 'ALPS_domain-Emulator_hist_future-CNRMCM5-perfect'
 

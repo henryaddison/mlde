@@ -59,11 +59,15 @@ def val_loss(config, eval_dl, eval_step_fn, state):
   # so value is not down to vagaries of random choice of initial noise samples or schedules
   g = torch.Generator(device=config.device)
   g.manual_seed(42)
-  for eval_cond_batch, eval_target_batch, eval_time_batch in eval_dl:
+  for eval_cond_batch, eval_statics_batch, eval_target_batch, eval_time_batch in eval_dl:
     # eval_cond_batch, eval_target_batch = next(iter(eval_dl))
     eval_target_batch = eval_target_batch.to(config.device)
     eval_cond_batch = eval_cond_batch.to(config.device)
     eval_cond_batch = torch.nn.functional.interpolate(eval_cond_batch, size=eval_target_batch.shape[-2:], mode="nearest")
+    if torch.numel(eval_statics_batch) > 0:
+      eval_statics_batch = eval_statics_batch.to(config.device)
+      # concatenate static variables to the conditioning batch
+      eval_cond_batch = torch.cat([eval_cond_batch, eval_statics_batch], dim=1)
     # append any location-specific parameters
     eval_cond_batch = state['location_params'](eval_cond_batch)
     # eval_batch = eval_batch.permute(0, 3, 1, 2)
@@ -119,7 +123,7 @@ def train(config, workdir):
     # Build dataloaders
     dataset_meta = DatasetMetadata(config.data.dataset_name)
 
-    predictor_variables, target_variables = get_variables(config)
+    predictor_variables, static_variables, target_variables = get_variables(config)
 
     transform = get_predictor_transform(
         config.data.dataset_name,
@@ -139,6 +143,7 @@ def train(config, workdir):
     train_dl = get_dataloader(
       config.data.dataset_name,
       predictor_variables=predictor_variables,
+      static_variables=static_variables,
       target_variables=target_variables,
       transform=transform,
       target_transform=target_transform,
@@ -151,6 +156,7 @@ def train(config, workdir):
     eval_dl = get_dataloader(
       config.data.dataset_name,
       predictor_variables=predictor_variables,
+      static_variables=static_variables,
       target_variables=target_variables,
       transform=transform,
       target_transform=target_transform,
@@ -225,11 +231,16 @@ def train(config, workdir):
       train_set_loss = 0.0
       with logging_redirect_tqdm():
         with tqdm(total=len(train_dl.dataset), desc=f"Epoch {state['epoch']}", unit=' timesteps') as pbar:
-          for cond_batch, target_batch, time_batch in train_dl:
+          for cond_batch, statics_batch, target_batch, time_batch in train_dl:
 
             target_batch = target_batch.to(config.device)
             cond_batch = cond_batch.to(config.device)
             cond_batch = torch.nn.functional.interpolate(cond_batch, size=target_batch.shape[-2:], mode="nearest")
+
+            if torch.numel(statics_batch) > 0:
+              statics_batch = statics_batch.to(config.device)
+              # concatenate static variables to the conditioning batch
+              cond_batch = torch.cat([cond_batch, statics_batch], dim=1)
             # append any location-specific parameters
             cond_batch = state['location_params'](cond_batch)
 
