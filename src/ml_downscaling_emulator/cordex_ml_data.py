@@ -40,6 +40,8 @@ def _experiment_path(dataset_name, split):
     split_dir = split
     if split == "val":
         split_dir = "train"
+    elif split == "train+val":
+        split_dir = "train"
 
     return DATASETS_PATH / dataset_name / split_dir
 
