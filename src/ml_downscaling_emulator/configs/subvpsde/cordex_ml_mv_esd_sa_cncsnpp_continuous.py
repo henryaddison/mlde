@@ -22,6 +22,10 @@ from ml_downscaling_emulator.configs.subvpsde.cordex_ml_mv_cncsnpp_continuous_de
 def get_config():
   config = get_default_configs()
 
+  # training
+  training = config.training
+  training.n_epochs = 2000
+
   # data
   data = config.data
   data.dataset_name = 'SA_domain-ESD_pseudo_reality-ACCESSCM2-perfect'
