@@ -11,4 +11,4 @@ for fp in glob.glob(
         ds["lat"] = ds["lat"].assign_attrs({"axis": "Y"})
         ds["time"] = ds["time"].assign_attrs({"axis": "T"})
         print(f"fixing {fp}")
-        # ds.to_netcdf(fp)
+        ds.to_netcdf(fp)
