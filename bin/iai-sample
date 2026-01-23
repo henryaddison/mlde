@@ -18,4 +18,4 @@ batch_size=366
 hostname
 nvidia-smi
 
-pixi run python bin/predict.py --checkpoint ${checkpoint} --num-samples ${nsamples} --dataset ${dataset} --split ${split} --batch-size ${batch_size}  ${workdir}
+pixi run --as-is --locked python bin/predict.py --checkpoint ${checkpoint} --num-samples ${nsamples} --dataset ${dataset} --split ${split} --batch-size ${batch_size}  ${workdir}
