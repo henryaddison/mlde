@@ -1,0 +1,16 @@
+#! /bin/bash
+
+#SBATCH --gpus=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --time=1-00:00:00
+
+set -euo pipefail
+
+config=$1
+workdir=$2
+
+hostname
+nvidia-smi
+
+pixi run --as-is --locked python bin/main.py --mode train --config ${config} --config.data.static_variables="orog" --config.training.n_epochs=3000 --workdir ${workdir}
