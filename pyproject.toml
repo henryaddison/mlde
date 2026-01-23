@@ -20,7 +20,7 @@ classifiers = [
 dependencies = [
   "flufl-lock~=7.1.1",
   "mlde-utils==0.2.0",
-  "mlflow~=3.6",
+  # "mlflow~=3.6",
   "tqdm~=4.67",
   "torchinfo>=1.8.0,<2",
 ]
@@ -42,7 +42,7 @@ extend-exclude = '^/src/ml_downscaling_emulator/(run_lib.py|sde_lib.py|likelihoo
 [tool.pixi.workspace]
 channels = ["https://prefix.dev/conda-forge", "nodefaults"]
 name = "mlde"
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64"]
 
 [tool.pixi.system-requirements]
 cuda = "12.8"
@@ -59,7 +59,7 @@ lint = {features = ["lint"], no-default-feature = true}
 absl-py = { version = "~=1.3.0" }
 bottleneck = { version = "~=1.6.0"}
 cartopy = { version = "~=0.25.0" }
-cdo = { version = "~=2.5.0" }
+#cdo = { version = "~=2.5.0" }
 cf-xarray = { version = "~=0.10.9" }
 codetiming = { version = "~=1.4.0" }
 cuda-version = "12.8.*"
@@ -73,12 +73,13 @@ ninja = { version = "~=1.11.1" }
 pint = { version = "~=0.25" }
 protobuf = { version = "~=6.31.1" }
 python = { version = "~=3.14.0" }
-python-cdo = { version = "~=1.6" }
+#python-cdo = { version = "~=1.6" }
 python-dotenv = { version = "~=1.0" }
 shortuuid = { version = "~=1.0" }
 tensorboard = { version = "~=2.20" }
 typer = { version = "~=0.20"}
 xarray = { version = "==2025.11.0" }
+scipy = ">=1.17.0,<2"
 
 [tool.pixi.pypi-dependencies]
 ml-downscaling-emulator = { path = ".", editable = true }
