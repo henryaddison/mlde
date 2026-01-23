@@ -1,0 +1,14 @@
+#! /bin/bash
+
+#SBATCH --gpus=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --time=1-00:00:00
+
+set -euo pipefail
+
+checkpoint=$1
+workdir=$2
+dataset=$3
+
+pixi run python bin/predict.py --checkpoint ${checkpoint} --num-samples 1 --dataset ${dataset} --split test --batch-size 256 ${workdir}
