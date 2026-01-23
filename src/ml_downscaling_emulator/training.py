@@ -3,7 +3,7 @@ import logging
 
 
 def log_epoch(epoch, epoch_metrics, tb_writer):
-    import mlflow
+    # import mlflow
 
     logging.info(
         " ".join(
@@ -11,20 +11,20 @@ def log_epoch(epoch, epoch_metrics, tb_writer):
         )
     )
 
-    mlflow.log_metrics(epoch_metrics, step=epoch)
+    # mlflow.log_metrics(epoch_metrics, step=epoch)
     for name, value in epoch_metrics.items():
         tb_writer.add_scalar(name, value, epoch)
 
 
 @contextmanager
 def track_run(experiment_name, run_name, config, tags, tb_dir):
-    import mlflow
+    # import mlflow
     from torch.utils.tensorboard import SummaryWriter
 
-    mlflow.set_experiment(experiment_name)
-    with mlflow.start_run(run_name=run_name):
-        mlflow.set_tags({key: True for key in tags})
-        mlflow.log_params(config)
+    # mlflow.set_experiment(experiment_name)
+    # with mlflow.start_run(run_name=run_name):
+    #     mlflow.set_tags({key: True for key in tags})
+    #     mlflow.log_params(config)
 
-        with SummaryWriter(tb_dir) as tb_writer:
-            yield tb_writer
+    with SummaryWriter(tb_dir) as tb_writer:
+        yield tb_writer
