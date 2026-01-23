@@ -47,8 +47,8 @@ import ml_downscaling_emulator.models as models  # noqa: F401
 from ml_downscaling_emulator.models import utils as mutils
 
 from ml_downscaling_emulator.models import cncsnpp  # noqa: F401
-from ml_downscaling_emulator.models import cunet  # noqa: F401
-from ml_downscaling_emulator.models import det_cunet  # noqa: F401
+# from ml_downscaling_emulator.models import cunet  # noqa: F401
+# from ml_downscaling_emulator.models import det_cunet  # noqa: F401
 
 from ml_downscaling_emulator.models import (  # noqa: F401
     layerspp,  # noqa: F401
