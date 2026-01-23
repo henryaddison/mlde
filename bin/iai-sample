@@ -13,4 +13,7 @@ dataset=$3
 split=${4:-test}
 nsamples=${5:-1}
 
+hostname
+nvidia-smi
+
 pixi run python bin/predict.py --checkpoint ${checkpoint} --num-samples ${nsamples} --dataset ${dataset} --split ${split} --batch-size 256 ${workdir}
