@@ -10,10 +10,12 @@ set -euo pipefail
 checkpoint=$1
 workdir=$2
 dataset=$3
-split=${4:-test}
-nsamples=${5:-1}
+nsamples=${4:-1}
+split=${5:-test}
+
+batch_size=366
 
 hostname
 nvidia-smi
 
-pixi run python bin/predict.py --checkpoint ${checkpoint} --num-samples ${nsamples} --dataset ${dataset} --split ${split} --batch-size 256 ${workdir}
+pixi run python bin/predict.py --checkpoint ${checkpoint} --num-samples ${nsamples} --dataset ${dataset} --split ${split} --batch-size ${batch_size}  ${workdir}
