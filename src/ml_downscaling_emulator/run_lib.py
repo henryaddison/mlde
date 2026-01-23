@@ -29,7 +29,8 @@ import os
 from codetiming import Timer
 import logging
 # Keep the import below for registering all model definitions
-from .models import det_cunet, cunet, cncsnpp
+# from .models import det_cunet, cunet, cncsnpp
+from .models import cncsnpp
 from . import losses
 from .models.location_params import LocationParams
 from . import sampling
