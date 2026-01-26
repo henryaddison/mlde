@@ -83,8 +83,8 @@ scipy = ">=1.17.0,<2"
 
 [tool.pixi.pypi-dependencies]
 ml-downscaling-emulator = { path = ".", editable = true }
-torch = { version = "==2.9.1", index = "https://download.pytorch.org/whl/cu128" }
-torchvision = { version = "==0.24.1", index = "https://download.pytorch.org/whl/cu128" }
+torch = { version = "==2.10", index = "https://download.pytorch.org/whl/cu128" }
+torchvision = { version = "==0.25", index = "https://download.pytorch.org/whl/cu128" }
 
 [tool.pixi.feature.lint.dependencies]
 python = { version = "~=3.14.0" }
