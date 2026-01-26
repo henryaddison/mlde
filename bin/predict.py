@@ -47,7 +47,6 @@ import ml_downscaling_emulator.models as models  # noqa: F401
 from ml_downscaling_emulator.models import utils as mutils
 
 from ml_downscaling_emulator.models import cncsnpp  # noqa: F401
-
 # from ml_downscaling_emulator.models import cunet  # noqa: F401
 # from ml_downscaling_emulator.models import det_cunet  # noqa: F401
 
@@ -143,8 +142,6 @@ def load_model(config, ckpt_filename):
     state, loaded = restore_checkpoint(ckpt_filename, state, config.device)
     assert loaded, "Did not load state from checkpoint"
     state["ema"].copy_to(state["model"].parameters())
-
-    state["model"].compile()
 
     # Sampling
     _, _, target_vars = get_variables(config)
