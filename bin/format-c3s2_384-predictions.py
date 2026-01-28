@@ -100,12 +100,12 @@ TRAINING_MODES = {
 
 EMULATORS = {
     "Emulator_hist_future": {
-        # "ALPS": {
-        #     "checkpoint": "epoch_540",
-        # },
-        # "NZ": {
-        #     "checkpoint": "epoch_260",
-        # },
+        "ALPS": {
+            "checkpoint": "epoch_540",
+        },
+        "NZ": {
+            "checkpoint": "epoch_260",
+        },
         "SA": {
             "checkpoint": "epoch_560",
         },
