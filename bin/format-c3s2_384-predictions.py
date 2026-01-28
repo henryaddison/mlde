@@ -190,6 +190,7 @@ def main(workdir_root: Path):
                     "test",
                     "01",
                 )
+                logger.info(f"Looking for samples in {samples_path}")
                 samples_filepaths = list(samples_path.glob("*/predictions-*.nc"))
                 assert (
                     len(samples_filepaths) == NSAMPLES_REQUIRED
