@@ -146,12 +146,12 @@ def format_samples(samples_filepaths, domain):
 
         assert (
             ds[var].dims == ("member",) + template_ds[var].dims
-        ), f"Variable {var} has different dims in samples and template"
+        ), f"Variable {var} has different dims in samples ({ds[var].dims}) and template ({template_ds[var].dims})"
         for c in template_ds.coords:
             assert c in ds.coords
             assert (
                 ds[c].attrs == template_ds[c].attrs
-            ), f"Coordinate {c} has different attributes in samples and template"
+            ), f"Coordinate {c} has different attributes in samples ({ds[c].attrs}) and template ({template_ds[c].attrs})"
 
     return ds
 
