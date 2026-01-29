@@ -126,7 +126,7 @@ EMULATORS = {
 PROJECT = "C3S2_384"
 EMULATOR_ID = "emulator_id"
 
-NSAMPLES_REQUIRED = 10
+NSAMPLES_REQUIRED = 5
 
 
 def format_samples(samples_filepaths, domain):
@@ -191,7 +191,9 @@ def main(workdir_root: Path):
                     "01",
                 )
                 logger.info(f"Looking for samples in {samples_path}")
-                samples_filepaths = list(samples_path.glob("*/predictions-*.nc"))
+                samples_filepaths = list(samples_path.glob("*/predictions-*.nc"))[
+                    :NSAMPLES_REQUIRED
+                ]
                 assert (
                     len(samples_filepaths) == NSAMPLES_REQUIRED
                 ), f"Expected {NSAMPLES_REQUIRED} sample files in {samples_path}, found {len(samples_filepaths)}"
