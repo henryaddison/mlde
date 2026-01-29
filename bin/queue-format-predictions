@@ -1,0 +1,12 @@
+#! /bin/bash
+
+#SBATCH --mem=64G
+#SBATCH --cpus-per-task=1
+#SBATCH --time=04:00:00
+
+set -euo pipefail
+
+project=${1:-"C3S2_384"}
+emulator_id=${2:-"uob_rcmgem-orog"}
+
+CONDA_OVERRIDE_CUDA=12.8 pixi run python bin/format-cordexmlbench-predictions.py /gws/nopw/j04/furflex/henrya/projects/cordex-ml-bench/workdirs --project ${project} --emulator_id ${emulator_id}
