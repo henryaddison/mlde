@@ -140,8 +140,12 @@ def format_samples(samples_filepaths, domain):
         template_ds = xr.open_dataset(
             f"vendor/ml-benchmark/format_predictions/templates/{var}_{domain}.nc"
         )
+
+        # copy attributes from template for time coordinate
+        ds["time"].attrs = template_ds["time"].attrs
+
         assert (
-            ds[var].dims == template_ds[var].dims
+            ds[var].dims == ("member",) + template_ds[var].dims
         ), f"Variable {var} has different dims in samples and template"
         for c in template_ds.coords:
             assert c in ds.coords
