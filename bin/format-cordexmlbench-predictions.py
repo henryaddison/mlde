@@ -1,3 +1,5 @@
+import shutil
+import tempfile
 import dotenv
 import logging
 import os
@@ -123,10 +125,25 @@ EMULATORS = {
     },
 }
 
-PROJECT = "C3S2_384"
-EMULATOR_ID = "emulator_id"
 
-NSAMPLES_REQUIRED = 5
+def save_netcdf_atomic(ds: xr.Dataset, fp: Path):
+    """Save xarray Dataset to NetCDF file atomically."""
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".nc") as tmpf:
+            tmp_path = tmpf.name
+
+        # Save to the temporary file
+        ds.to_netcdf(tmp_path)
+
+        # Move the completed file into the final location. Use shutil.move
+        # to handle cross-filesystem renames (e.g., local /tmp -> NFS).
+        shutil.move(tmp_path, fp)
+        tmp_path = None
+    finally:
+        # Cleanup any leftover temp file on error
+        if tmp_path is not None and os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 def format_samples(samples_filepaths, domain):
@@ -158,14 +175,10 @@ def format_samples(samples_filepaths, domain):
     return ds
 
 
-def zip_submission(output_base: Path):
+def zip_submission(output_base: Path, emulator_id: str):
     # ZIP the submission using the "emulator_id" code specified in the registration
-    zip_filename = f"{EMULATOR_ID}.zip"
-    output_base = Path(
-        os.getenv("DATA_PATH"),
-        "formatted_predictions",
-        PROJECT,
-    )
+    zip_filename = f"{emulator_id}.zip"
+
     zip_path = os.path.join(output_base, zip_filename)
 
     logger.info(f"Creating submission package: {zip_path}")
@@ -181,10 +194,15 @@ app = typer.Typer()
 
 
 @app.command()
-def main(workdir_root: Path):
-    for training_mode in TRAINING_MODES[PROJECT]:
+def main(
+    workdir_root: Path,
+    project: str = "C3S2_384",
+    emulator_id: str = "emulator_id",
+    nsamples_required: int = 5,
+):
+    for training_mode in TRAINING_MODES[project]:
         for domain, emu_config in EMULATORS[training_mode].items():
-            for dataset in DATASETS[PROJECT][domain]:
+            for dataset in DATASETS[project][domain]:
                 _, period, gcm, src = dataset.split("-")
                 samples_path = Path(
                     workdir_root,
@@ -198,18 +216,19 @@ def main(workdir_root: Path):
                 )
                 logger.info(f"Looking for samples in {samples_path}")
                 samples_filepaths = list(samples_path.glob("*/predictions-*.nc"))[
-                    :NSAMPLES_REQUIRED
+                    :nsamples_required
                 ]
                 assert (
-                    len(samples_filepaths) == NSAMPLES_REQUIRED
-                ), f"Expected {NSAMPLES_REQUIRED} sample files in {samples_path}, found {len(samples_filepaths)}"
+                    len(samples_filepaths) == nsamples_required
+                ), f"Expected {nsamples_required} sample files in {samples_path}, found {len(samples_filepaths)}"
 
                 _ = format_samples(samples_filepaths, domain)
                 output_base = Path(
                     os.getenv("DATA_PATH"),
                     "formatted_predictions",
-                    PROJECT,
+                    project,
                 )
+
                 output_path = (
                     output_base
                     / f"{domain}_domain"
@@ -221,10 +240,10 @@ def main(workdir_root: Path):
 
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Saving formatted predictions to {output_path}")
-                # ds.to_netcdf(output_path)
+                # save_netcdf_atomic(ds, output_path)
                 logger.info(f"DONE")
 
-    # zip_submission(output_base)
+    # zip_submission(output_base, emulator_id)
     logger.info(f"DONE")
 
 
