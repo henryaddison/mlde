@@ -132,6 +132,7 @@ NSAMPLES_REQUIRED = 5
 def format_samples(samples_filepaths, domain):
     # combine samples along new "member" dimension
     # rename variables
+    logger.info(f"Combining samples and renaming variables...")
     ds = xr.concat(
         [xr.open_dataset(f) for f in samples_filepaths], dim="member"
     ).rename({f"pred_{var}": var for var in ["pr", "tasmax"]})
@@ -140,10 +141,11 @@ def format_samples(samples_filepaths, domain):
         template_ds = xr.open_dataset(
             f"vendor/ml-benchmark/format_predictions/templates/{var}_{domain}.nc"
         )
-
+        logger.info(f"Formatting time attrs...")
         # copy attributes from template for time coordinate
         ds["time"].attrs = template_ds["time"].attrs
 
+        logger.info(f"Validating dimensions and coordinate attributes for {var} ...")
         assert (
             ds[var].dims == ("member",) + template_ds[var].dims
         ), f"Variable {var} has different dims in samples ({ds[var].dims}) and template ({template_ds[var].dims})"
