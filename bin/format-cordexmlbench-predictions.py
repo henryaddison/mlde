@@ -210,13 +210,15 @@ def main(workdir_root: Path):
                     "formatted_predictions",
                     PROJECT,
                 )
-                output_path = output_base.join(
-                    f"{domain}_domain",
-                    training_mode,
-                    period,
-                    src,
-                    f"Predictions_pr_tasmax_{gcm}_{TEST_YEARS[period]}.nc",
+                output_path = (
+                    output_base
+                    / f"{domain}_domain"
+                    / training_mode
+                    / period
+                    / src
+                    / f"Predictions_pr_tasmax_{gcm}_{TEST_YEARS[period]}.nc"
                 )
+
                 output_path.parent.mkdir(parents=True, exist_ok=True)
                 logger.info(f"Saving formatted predictions to {output_path}")
                 # ds.to_netcdf(output_path)
