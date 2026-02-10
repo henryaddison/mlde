@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 import typer
 import xarray as xr
-import zipfile
 
 dotenv.load_dotenv()
 
@@ -125,6 +124,14 @@ EMULATORS = {
     },
 }
 
+GCM_RENAME = {
+    "ACCESSCM2": "ACCESS-CM2",
+    "CNRMCM5": "CNRM-CM5",
+    "ECEarth3": "EC-Earth3",
+    "MPIESMLR": "MPI-ESM-LR",
+    "NorESM2MM": "NorESM2-MM",
+}
+
 
 def save_netcdf_atomic(ds: xr.Dataset, fp: Path):
     """Save xarray Dataset to NetCDF file atomically."""
@@ -175,75 +182,67 @@ def format_samples(samples_filepaths, domain):
     return ds
 
 
-def zip_submission(output_base: Path, emulator_id: str):
-    # ZIP the submission using the "emulator_id" code specified in the registration
-    zip_filename = f"{emulator_id}.zip"
-
-    zip_path = os.path.join(output_base, zip_filename)
-
-    logger.info(f"Creating submission package: {zip_path}")
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(output_base):
-            for file in files:
-                abs_path = os.path.join(root, file)
-                rel_path = os.path.relpath(abs_path, output_base)
-                zipf.write(abs_path, rel_path)
-
-
 app = typer.Typer()
 
 
 @app.command()
 def main(
     workdir_root: Path,
-    project: str = "C3S2_384",
-    emulator_id: str = "emulator_id",
+    project: str = "CORDEXMLBench",
+    domain: str = typer.Option(
+        None, help="Domain to process (e.g. 'ALPS', 'NZ', 'SA')"
+    ),
+    training_mode: str = typer.Option(
+        None,
+        help="Training mode to process (e.g. 'Emulator_hist_future', 'ESD_pseudo_reality')",
+    ),
     nsamples_required: int = 5,
 ):
-    for training_mode in TRAINING_MODES[project]:
-        for domain, emu_config in EMULATORS[training_mode].items():
-            for dataset in DATASETS[project][domain]:
-                _, period, gcm, src = dataset.split("-")
-                samples_path = Path(
-                    workdir_root,
-                    f"mlde/score-sde/subvpsde/cordex_ml_mv_hist_fut_{domain.lower()}_cncsnpp_continuous/w_static_rcmgem",
-                    "samples",
-                    emu_config["checkpoint"],
-                    dataset,
-                    f"{domain}_domain-{training_mode}-{TRAINING_GCMS[domain]}-perfect-stan",
-                    "test",
-                    "01",
-                )
-                logger.info(f"Looking for samples in {samples_path}")
-                samples_filepaths = list(samples_path.glob("*/predictions-*.nc"))[
-                    :nsamples_required
-                ]
-                assert (
-                    len(samples_filepaths) == nsamples_required
-                ), f"Expected {nsamples_required} sample files in {samples_path}, found {len(samples_filepaths)}"
+    assert (
+        training_mode in TRAINING_MODES[project]
+    ), f"Invalid training mode {training_mode} for project {project}. Must be one of {TRAINING_MODES[project]}"
+    emu_config = EMULATORS[training_mode][domain]
+    for dataset in DATASETS[project][domain]:
+        _, period, gcm, src = dataset.split("-")
+        samples_path = Path(
+            workdir_root,
+            f"mlde/score-sde/subvpsde/cordex_ml_mv_hist_fut_{domain.lower()}_cncsnpp_continuous/w_static_rcmgem",
+            "samples",
+            emu_config["checkpoint"],
+            dataset,
+            f"{domain}_domain-{training_mode}-{TRAINING_GCMS[domain]}-perfect-stan",
+            "test",
+            "01",
+        )
+        logger.info(f"Looking for samples in {samples_path}")
+        samples_filepaths = list(samples_path.glob("*/predictions-*.nc"))[
+            :nsamples_required
+        ]
+        assert (
+            len(samples_filepaths) == nsamples_required
+        ), f"Expected {nsamples_required} sample files in {samples_path}, found {len(samples_filepaths)}"
 
-                _ = format_samples(samples_filepaths, domain)
-                output_base = Path(
-                    os.getenv("DATA_PATH"),
-                    "formatted_predictions",
-                    project,
-                )
+        ds = format_samples(samples_filepaths, domain)
+        output_base = Path(
+            os.getenv("DATA_PATH"),
+            "formatted_predictions",
+            project,
+        )
 
-                output_path = (
-                    output_base
-                    / f"{domain}_domain"
-                    / training_mode
-                    / period
-                    / src
-                    / f"Predictions_pr_tasmax_{gcm}_{TEST_YEARS[period]}.nc"
-                )
+        output_path = (
+            output_base
+            / f"{domain}_domain"
+            / training_mode
+            / period
+            / src
+            / f"Predictions_pr_tasmax_{GCM_RENAME[gcm]}_{TEST_YEARS[period]}.nc"
+        )
 
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                logger.info(f"Saving formatted predictions to {output_path}")
-                # save_netcdf_atomic(ds, output_path)
-                logger.info(f"DONE")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Saving formatted predictions to {output_path}")
+        save_netcdf_atomic(ds, output_path)
+        logger.info(f"DONE")
 
-    # zip_submission(output_base, emulator_id)
     logger.info(f"DONE")
 
 
