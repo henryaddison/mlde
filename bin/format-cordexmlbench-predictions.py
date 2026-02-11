@@ -99,6 +99,11 @@ TRAINING_MODES = {
     "C3S2_384": ["Emulator_hist_future"],
 }
 
+TM_SHORTHANDS = {
+    "Emulator_hist_future": "hist_fut",
+    "ESD_pseudo_reality": "esd",
+}
+
 EMULATORS = {
     "Emulator_hist_future": {
         "ALPS": {
@@ -202,11 +207,12 @@ def main(
         training_mode in TRAINING_MODES[project]
     ), f"Invalid training mode {training_mode} for project {project}. Must be one of {TRAINING_MODES[project]}"
     emu_config = EMULATORS[training_mode][domain]
+
     for dataset in DATASETS[project][domain]:
         _, period, gcm, src = dataset.split("-")
         samples_path = Path(
             workdir_root,
-            f"mlde/score-sde/subvpsde/cordex_ml_mv_hist_fut_{domain.lower()}_cncsnpp_continuous/w_static_rcmgem",
+            f"mlde/score-sde/subvpsde/cordex_ml_mv_{TM_SHORTHANDS[training_mode]}_{domain.lower()}_cncsnpp_continuous/w_static_rcmgem",
             "samples",
             emu_config["checkpoint"],
             dataset,
