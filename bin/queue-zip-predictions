@@ -1,0 +1,13 @@
+#! /bin/bash
+
+#SBATCH --account=furflex
+#SBATCH --partition=standard
+#SBATCH --qos=standard
+#SBATCH --mem=128G
+#SBATCH --cpus-per-task=1
+#SBATCH --time=1-00:00:00
+
+set -euo pipefail
+
+
+CONDA_OVERRIDE_CUDA=12.8 pixi run python bin/zip-cordexmlbench-predictions.py /gws/nopw/j04/furflex/henrya/projects/cordex-ml-bench/data/formatted_predictions/CORDEXMLBench
