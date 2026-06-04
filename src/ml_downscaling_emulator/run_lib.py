@@ -38,6 +38,7 @@ from .models.ema import ExponentialMovingAverage
 from . import likelihood
 from . import sde_lib
 from absl import flags
+from knockknock import slack_sender
 import torch
 import torchvision
 from tqdm import tqdm
